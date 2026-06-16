@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIEC Billing Manager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --green:#006633;--green-mid:#00843F;--green-light:#E6F4EC;--green-pale:#F2FAF5;
+  --red:#C8192D;--red-light:#FDECEA;--amber:#D97706;--amber-light:#FEF3C7;
+  --blue:#1D4ED8;--blue-light:#EFF6FF;--purple:#7c3aed;--purple-light:#EDE9FE;
+  --text:#111827;--text2:#6B7280;--text3:#9CA3AF;
+  --border:#E5E7EB;--border2:#D1D5DB;--bg:#F9FAFB;--white:#fff;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+#topbar{background:var(--green);padding:0 20px;display:flex;align-items:center;height:52px;gap:14px;box-shadow:0 2px 8px rgba(0,102,51,.3)}
+.logo{font-weight:700;font-size:16px;color:#fff}.logo span{color:#7FD4A8}
+.spacer{flex:1}
+.rate-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-family:'DM Mono',monospace}
+.db-status{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.7)}
+.db-dot{width:8px;height:8px;border-radius:50%;background:#fbbf24;flex-shrink:0}
+.db-dot.ok{background:#4ade80}.db-dot.err{background:#f87171}
+
+#nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 16px;display:flex;overflow-x:auto}
+.nav-tab{padding:13px 14px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all .15s;flex-shrink:0}
+.nav-tab:hover{color:var(--text)}.nav-tab.active{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+
+#app{max-width:1100px;margin:0 auto;padding:18px}
+.panel{display:none}.panel.active{display:block}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow)}
+.ch{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ct{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.cb{padding:16px 18px}
+
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.sc{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow)}
+.sl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.sv{font-size:21px;font-weight:700;font-family:'DM Mono',monospace;line-height:1}
+.sv.g{color:var(--green)}.sv.r{color:var(--red)}.sv.a{color:var(--amber)}
+.ss{font-size:11px;color:var(--text3);margin-top:3px}
+
+.hero{background:linear-gradient(135deg,var(--green),var(--green-mid));border-radius:10px;padding:16px 20px;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;box-shadow:0 4px 12px rgba(0,102,51,.25)}
+.hn{font-size:17px;font-weight:700;margin-bottom:2px}
+.hs{font-size:11px;color:rgba(255,255,255,.65)}
+.hstats{display:flex;gap:24px;margin-left:auto;flex-wrap:wrap}
+.hst{text-align:right}
+.hsv{font-size:19px;font-weight:700;font-family:'DM Mono',monospace}
+.hsv.w{color:#fbbf24}.hsv.d{color:#f87171}
+.hsl{font-size:10px;color:rgba(255,255,255,.65);margin-top:1px}
+
+.wb{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:var(--shadow)}
+.wbh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.wbt{font-size:14px;font-weight:600}
+.wbp{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:6px}
+.wr{display:flex;align-items:center;padding:6px 10px;background:var(--bg);border-radius:6px;gap:8px;font-size:12px;margin-bottom:4px}
+.wr-d{color:var(--text2);width:68px;flex-shrink:0}
+.wr-t{color:var(--text2);flex:1;font-size:11px}
+.wr-w{font-family:'DM Mono',monospace;font-weight:600;min-width:75px;text-align:right}
+.wr-a{font-family:'DM Mono',monospace;font-weight:700;color:var(--green);min-width:68px;text-align:right}
+.wtot{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--green-pale);border:1px solid #C6E8D4;border-radius:6px;margin:8px 0}
+.wtl{font-size:13px;font-weight:600;color:var(--green)}
+.wtv{font-size:16px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace}
+
+.sunda{background:linear-gradient(90deg,#7c3aed,#6d28d9);color:#fff;border-radius:10px;padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:14px}
+.fi{display:flex;flex-direction:column;gap:4px}
+.fi label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.fi input,.fi select,.fi textarea{padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:border-color .15s,box-shadow .15s}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,102,51,.08)}
+.cr{padding:8px 11px;border:1px solid #C6E8D4;border-radius:7px;background:var(--green-pale);font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--green)}
+.cr.z{background:var(--bg);border-color:var(--border);color:var(--text3)}
+
+.btn{padding:8px 15px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.bp{background:var(--green);color:#fff}.bp:hover{background:var(--green-mid)}
+.bs{background:var(--bg);color:var(--text);border:1px solid var(--border2)}.bs:hover{background:var(--border)}
+.br{background:var(--red);color:#fff}
+.ba{background:var(--amber);color:#fff}
+.bpu{background:var(--purple);color:#fff}
+.bbl{background:var(--blue);color:#fff}
+.bog{background:transparent;color:var(--green);border:1px solid var(--green)}.bog:hover{background:var(--green-light)}
+.bsm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg)}
+th{padding:8px 11px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:8px 11px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}tr:hover td{background:var(--bg)}
+.tm{font-family:'DM Mono',monospace;font-size:12px}
+.tg{color:var(--green);font-weight:600}.tr2{color:var(--red);font-weight:600}.ta{color:var(--amber);font-weight:600}
+
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.pg{background:var(--green-light);color:var(--green)}.pr{background:var(--red-light);color:var(--red)}
+.pa{background:var(--amber-light);color:var(--amber)}.pb{background:var(--blue-light);color:var(--blue)}
+
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:14px;margin-bottom:18px}
+.cc{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;position:relative}
+.cc:hover{border-color:var(--green)}.cc.act{border-color:var(--green);background:var(--green-pale)}
+.ccn{font-size:15px;font-weight:700;margin-bottom:2px}
+.cce{font-size:11px;color:var(--text3);margin-bottom:8px}
+.ccst{display:flex;gap:14px}
+.ccv{font-size:14px;font-weight:700;font-family:'DM Mono',monospace}
+.ccl{font-size:10px;color:var(--text3)}
+
+.rua{border:2px dashed var(--border2);border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg);position:relative;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px}
+.rua:hover{border-color:var(--green);background:var(--green-pale)}
+.rua input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.rth{width:44px;height:44px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer;transition:transform .15s}
+.rth:hover{transform:scale(1.1)}
+.rpdf{width:44px;height:44px;border-radius:6px;background:var(--red-light);border:1px solid #fca5a5;display:inline-flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:transform .15s;flex-shrink:0}
+.rpdf:hover{transform:scale(1.1)}
+.rrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+
+#lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:3000;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+#lb.open{display:flex}
+#lb img{max-width:92vw;max-height:82vh;border-radius:8px}
+#lb-x{position:absolute;top:14px;right:18px;color:#fff;font-size:26px;cursor:pointer;background:rgba(255,255,255,.1);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+#lb-lbl{color:rgba(255,255,255,.65);font-size:12px}
+
+.ivp{background:#fff;border:1px solid var(--border);border-radius:10px;padding:26px 30px;font-size:13px;max-width:700px;margin:0 auto}
+.ivh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.ivlogo{font-size:19px;font-weight:800;color:var(--green)}.ivlogo span{color:var(--red)}
+.ivnum{font-size:15px;font-weight:700;text-align:right}
+.ivdl{font-size:11px;color:var(--text2);text-align:right;margin-top:2px}
+.ivpar{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.ivpar h4{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.ivpar .nm{font-weight:700}
+.ivhr{border:none;border-top:1px solid var(--border);margin:0 0 16px}
+.ivt{width:100%;border-collapse:collapse;margin-bottom:18px}
+.ivt th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding:6px 8px;border-bottom:2px solid var(--border);text-align:left}
+.ivt td{padding:7px 8px;border-bottom:1px solid var(--border);font-size:12px}
+.ivt td:last-child,.ivt th:last-child{text-align:right}
+.ivtot{margin-left:auto;width:240px}
+.ivtr{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.ivtr.grand{font-size:16px;font-weight:700;color:var(--green);padding:8px 0 0;border-top:2px solid var(--border);margin-top:4px}
+.ivft{margin-top:18px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.8}
+
+.ecat{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.ef{background:#DBEAFE;color:#1D4ED8}.ei{background:#FCE7F3;color:#be185d}
+.er{background:var(--amber-light);color:var(--amber)}.eo{background:var(--green-light);color:var(--green)}
+
+.exp-entry{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.exp-eh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center;padding:14px}
+.mo.open{display:flex}
+.mb{background:var(--white);border-radius:12px;padding:22px;width:100%;max-width:780px;max-height:94vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.15)}
+.mt{font-size:15px;font-weight:700;margin-bottom:14px}
+.mac{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+
+.emc{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px}
+.emf{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.emf:last-child{border-bottom:none}
+.eml{font-size:11px;font-weight:600;color:var(--text3);width:38px;flex-shrink:0;text-transform:uppercase}
+.emv{font-size:13px;flex:1}
+.emv input{width:100%;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none}
+
+.balbox{border:1px solid var(--border);border-radius:10px;padding:14px 18px;background:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.bl{font-size:12px;color:var(--text2);margin-bottom:2px}
+.bv{font-size:25px;font-weight:800;font-family:'DM Mono',monospace}
+.bv.p{color:var(--red)}.bv.n{color:var(--green)}.bv.z{color:var(--amber)}
+
+.spr{display:flex;gap:10px;align-items:center;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)}
+.spl{font-size:12px;font-weight:600;color:var(--text2);flex:1}
+
+.ihr{display:flex;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap}
+.ihr:last-child{border-bottom:none}.ihr:hover{background:var(--bg)}
+.ihn{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);width:150px;flex-shrink:0}
+.ihc{font-weight:600;flex:1;min-width:90px}
+.ihp{font-size:11px;color:var(--text3);min-width:130px}
+.iha{font-family:'DM Mono',monospace;font-weight:700;color:var(--green);min-width:75px;text-align:right}
+.ihac{display:flex;gap:5px;margin-left:auto}
+
+.lit{width:100%;border-collapse:collapse;margin-bottom:8px}
+.lit th{font-size:10px;color:var(--text3);text-transform:uppercase;padding:6px 7px;border-bottom:1px solid var(--border);text-align:left}
+.lit td{padding:4px 4px;border-bottom:1px solid var(--border)}
+.lit input{width:100%;padding:5px 7px;border:1px solid var(--border2);border-radius:5px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none}
+.lit input:focus{border-color:var(--green)}
+
+/* LOADING OVERLAY */
+#loading{display:none;position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:5000;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#loading.show{display:flex}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.stl{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.mb3{margin-bottom:12px}.mb4{margin-bottom:16px}.mb5{margin-bottom:20px}
+.tr{text-align:right}
+.emp{text-align:center;padding:26px;color:var(--text3);font-size:13px}
+.fg2{display:flex;gap:8px;flex-wrap:wrap}
+
+#toast{position:fixed;bottom:18px;right:18px;background:var(--text);color:#fff;padding:10px 15px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:9999;max-width:320px}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.ok{background:var(--green)}#toast.err{background:var(--red)}
+
+@media(max-width:640px){
+  #app{padding:10px}.fg{grid-template-columns:1fr}
+  .hstats{margin-left:0}.nav-tab{padding:11px 9px;font-size:11px}
+  .ivpar{grid-template-columns:1fr}.ivp{padding:16px 12px}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo">A<span>+</span>IEC <span style="font-weight:300;color:rgba(255,255,255,.4)">|</span> Billing</div>
+  <div class="spacer"></div>
+  <div class="rate-badge" id="rate-badge">$0.45/lb</div>
+  <div class="db-status">
+    <div class="db-dot" id="db-dot"></div>
+    <span id="db-lbl">Connecting…</span>
+  </div>
+</div>
+
+<div id="nav">
+  <div class="nav-tab active" onclick="showPanel('dashboard')">📊 Dashboard</div>
+  <div class="nav-tab" onclick="showPanel('delivery')">🚛 Delivery</div>
+  <div class="nav-tab" onclick="showPanel('payment')">💵 Payment</div>
+  <div class="nav-tab" onclick="showPanel('expenses')">🧾 Expenses</div>
+  <div class="nav-tab" onclick="showPanel('invoices')">📄 Invoices</div>
+  <div class="nav-tab" onclick="showPanel('clients')">👥 Clients</div>
+  <div class="nav-tab" onclick="showPanel('history')">📋 History</div>
+  <div class="nav-tab" onclick="showPanel('trucks')">🚚 Trucks</div>
+  <div class="nav-tab" onclick="showPanel('settings')">⚙ Settings</div>
+</div>
+
+<div id="app">
+
+<!-- DASHBOARD -->
+<div class="panel active" id="panel-dashboard">
+  <div class="sunda" id="sun-alert" style="display:none">
+    <div><div style="font-size:13px;font-weight:600">📋 Sunday — Weekly Invoice Ready</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.7)" id="sun-sub">Week closing.</div></div>
+    <button class="btn bpu bsm" onclick="showPanel('invoices');setTimeout(openNewInvoice,200)">Create &amp; Save Invoice →</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+    <label style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Active Client:</label>
+    <select id="dash-client-sel" onchange="switchClient(this.value)" style="padding:7px 11px;border:1px solid var(--border2);border-radius:7px;font-size:13px;background:var(--white);outline:none;min-width:190px"></select>
+    <button class="btn bs bsm" onclick="showPanel('clients')">+ Clients</button>
+  </div>
+  <div class="hero">
+    <div><div class="hn" id="ch-name">No client selected</div><div class="hs">Mon–Sun · $<span id="ch-rate">0.45</span>/lb</div></div>
+    <div class="hstats">
+      <div class="hst"><div class="hsv" id="ch-bal">$0.00</div><div class="hsl">Balance Due</div></div>
+      <div class="hst"><div class="hsv" id="ch-wlbs">0 lbs</div><div class="hsl">This Week Net</div></div>
+      <div class="hst"><div class="hsv" id="ch-wamt">$0.00</div><div class="hsl">Week Amount</div></div>
+    </div>
+  </div>
+  <div class="wb">
+    <div class="wbh">
+      <div><span class="wbt">📦 This Week</span><span class="wbp" id="wk-period"></span></div>
+      <div class="fg2">
+        <button class="btn bs bsm" onclick="copyWeekSummary()">📋 Copy</button>
+        <button class="btn bp bsm" onclick="showPanel('invoices');setTimeout(openNewInvoice,200)">📄 Create Invoice</button>
+      </div>
+    </div>
+    <div id="wk-list"><div class="emp">No deliveries this week</div></div>
+    <div class="wtot"><span class="wtl">Total This Week</span><span id="wk-lbs-lbl" style="font-size:12px;color:var(--green);font-family:'DM Mono',monospace"></span><span class="wtv" id="wk-total">$0.00</span></div>
+  </div>
+  <div class="sg">
+    <div class="sc"><div class="sl">Total Net Weight</div><div class="sv g" id="s-lbs">0 lbs</div><div class="ss" id="s-dels">0 deliveries</div></div>
+    <div class="sc"><div class="sl">Total Revenue</div><div class="sv g" id="s-rev">$0.00</div><div class="ss">All time</div></div>
+    <div class="sc"><div class="sl">Total Paid</div><div class="sv" id="s-paid">$0.00</div><div class="ss" id="s-pct">0 payments</div></div>
+    <div class="sc"><div class="sl">Balance Due</div><div class="sv" id="s-bal">$0.00</div><div class="ss" id="s-bsub">—</div></div>
+  </div>
+</div>
+
+<!-- CLIENTS -->
+<div class="panel" id="panel-clients">
+  <div class="stl">👥 Client Management</div>
+  <div class="card mb5">
+    <div class="ch"><div class="ct" id="cf-title">Add New Client</div></div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fi"><label>Company Name *</label><input type="text" id="c-name" placeholder="e.g. Soretex"></div>
+        <div class="fi"><label>Contact Person</label><input type="text" id="c-contact"></div>
+        <div class="fi"><label>Email</label><input type="email" id="c-email"></div>
+        <div class="fi"><label>Phone</label><input type="text" id="c-phone"></div>
+      </div>
+      <div class="fg">
+        <div class="fi" style="grid-column:1/-1"><label>Address</label><input type="text" id="c-address"></div>
+      </div>
+      <div class="fg">
+        <div class="fi"><label>Rate Override ($/lb)</label><input type="number" id="c-rate" placeholder="0.450" step="0.001" min="0"></div>
+        <div class="fi"><label>Payment Terms</label>
+          <select id="c-terms"><option value="Advance required">Advance required ($4,000)</option><option value="Net 7">Net 7</option><option value="Net 15">Net 15</option><option value="Net 30">Net 30</option><option value="Due on receipt">Due on receipt</option></select>
+        </div>
+        <div class="fi"><label>Notes</label><input type="text" id="c-notes"></div>
+      </div>
+      <div class="fg2">
+        <button class="btn bp" onclick="saveClient()">+ Add Client</button>
+        <button class="btn bs" id="c-upd-btn" style="display:none" onclick="updateClient()">✓ Update</button>
+        <button class="btn bs" id="c-can-btn" style="display:none" onclick="cancelCEdit()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="cg" id="clients-grid"><div class="emp" style="grid-column:1/-1">No clients yet</div></div>
+</div>
+
+<!-- DELIVERY -->
+<div class="panel" id="panel-delivery">
+  <div class="card">
+    <div class="ch"><div class="ct">🚛 Log Delivery</div></div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fi"><label>Date</label><input type="date" id="d-date"></div>
+        <div class="fi"><label>Client</label><select id="d-csel" style="padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-size:13px;background:var(--white);outline:none"></select></div>
+        <div class="fi"><label>Truck</label><select id="d-truck" style="padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-size:13px;background:var(--white);outline:none"></select></div>
+        <div class="fi"><label>Ticket #</label><input type="text" id="d-ticket"></div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:13px;margin-bottom:13px">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">⚖ Weight Calculation</div>
+        <div class="fg" style="margin-bottom:0">
+          <div class="fi"><label>Gross Weight (lbs) — full truck</label><input type="number" id="d-gross" placeholder="e.g. 32500" step="1" min="0" oninput="calcDel()"></div>
+          <div class="fi"><label>Tare / Empty Weight (lbs)</label><input type="number" id="d-tare" placeholder="e.g. 26000" step="1" min="0" oninput="calcDel()"></div>
+          <div class="fi"><label>Net = Gross − Tare</label><div class="cr z" id="d-net">Enter both weights</div></div>
+          <div class="fi"><label>Amount = Net × $<span id="rate-il">0.450</span>/lb</label><div class="cr z" id="d-amt">—</div></div>
+        </div>
+      </div>
+      <div class="fi mb4" style="max-width:380px"><label>Notes</label><input type="text" id="d-notes"></div>
+      <div class="fi mb4">
+        <label>Receipt / Weight Ticket</label>
+        <div class="rua" id="d-drop"><input type="file" id="d-rf" accept="image/*,application/pdf" multiple onchange="handleFiles(this,'d')"><span style="font-size:18px">📎</span><span style="font-size:12px;color:var(--text3)"><strong style="color:var(--green)">Click</strong> or drag &amp; drop</span></div>
+        <div class="rrow" id="d-rp"></div>
+      </div>
+      <div class="fg2">
+        <button class="btn bp" id="d-save-btn" onclick="saveDelivery()">✓ Save Delivery</button>
+        <button class="btn bs" onclick="clearDelForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT -->
+<div class="panel" id="panel-payment">
+  <div class="balbox">
+    <div><div class="bl">Balance Due — <span id="pay-cn">select client</span></div><div class="bv p" id="pay-bal">$0.00</div></div>
+    <div style="margin-left:auto"><select style="padding:7px 11px;border:1px solid var(--border2);border-radius:7px;font-size:13px;background:var(--white);outline:none" id="pay-csel" onchange="switchPayClient(this.value)"></select></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">💵 Record Payment</div></div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fi"><label>Date</label><input type="date" id="p-date"></div>
+        <div class="fi"><label>Amount ($)</label><input type="number" id="p-amt" placeholder="4000" step="0.01" min="0" oninput="calcSplit()"></div>
+        <div class="fi"><label>Method</label><select id="p-meth" onchange="toggleZ()"><option>Zelle</option><option>Cash</option><option>Wire Transfer</option><option>Check</option></select></div>
+      </div>
+      <div id="z-fields"><div class="fg"><div class="fi"><label>Zelle To</label>
+        <select id="p-zto" onchange="calcSplit()">
+          <option value="Atef — 561-558-7017">Atef — 561-558-7017</option>
+          <option value="Partner — cfo@plusimportexportconsulting.com">Partner — cfo@…</option>
+          <option value="Split">Split</option>
+        </select>
+      </div></div></div>
+      <div id="split-sec" style="display:none;margin-bottom:13px">
+        <div class="spr"><div><div class="spl">Atef — 561-558-7017</div></div><input type="number" id="sp-atef" style="width:82px;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;font-family:'DM Mono',monospace;font-size:13px" oninput="calcSplitP()"></div>
+        <div class="spr"><div><div class="spl">Partner — cfo@plusimportexportconsulting.com</div></div><div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--green);width:82px;text-align:right" id="sp-part">$0.00</div></div>
+      </div>
+      <div class="fi mb4" style="max-width:380px"><label>Note</label><input type="text" id="p-note"></div>
+      <button class="btn bp" id="p-save-btn" onclick="savePayment()">✓ Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSES -->
+<div class="panel" id="panel-expenses">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div class="stl" style="margin-bottom:0">🧾 Expenses</div>
+    <div class="fg2">
+      <select style="padding:6px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--white)" id="exp-filter" onchange="renderExpenses()">
+        <option value="all">All</option><option value="Fuel">⛽ Fuel</option><option value="Insurance">🛡 Insurance</option><option value="Rental">🚐 Rental</option><option value="Other">📦 Other</option>
+      </select>
+      <button class="btn bs bsm" onclick="exportExpCSV()">⬇ CSV</button>
+    </div>
+  </div>
+  <div id="exp-summary" class="sg" style="margin-bottom:16px"></div>
+  <div class="card mb5">
+    <div class="ch"><div class="ct">Add Expense</div></div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fi"><label>Date</label><input type="date" id="e-date"></div>
+        <div class="fi"><label>Category</label><select id="e-cat"><option value="Fuel">⛽ Fuel</option><option value="Insurance">🛡 Insurance</option><option value="Rental">🚐 Rental</option><option value="Other">📦 Other</option></select></div>
+        <div class="fi"><label>Amount ($)</label><input type="number" id="e-amt" placeholder="0.00" step="0.01" min="0"></div>
+        <div class="fi"><label>Vendor / Description</label><input type="text" id="e-vendor" placeholder="e.g. BP Station #42"></div>
+      </div>
+      <div class="fi mb4" style="max-width:400px"><label>Notes / Reference #</label><input type="text" id="e-notes"></div>
+      <div class="fi mb4">
+        <label>Receipt (photo or PDF)</label>
+        <div class="rua" id="e-drop"><input type="file" id="e-rf" accept="image/*,application/pdf" multiple onchange="handleFiles(this,'e')"><span style="font-size:18px">📎</span><span style="font-size:12px;color:var(--text3)"><strong style="color:var(--green)">Click</strong> or drag &amp; drop</span></div>
+        <div class="rrow" id="e-rp"></div>
+      </div>
+      <button class="btn bp" id="e-save-btn" onclick="saveExpense()">+ Save Expense</button>
+    </div>
+  </div>
+  <div id="exp-list"></div>
+</div>
+
+<!-- INVOICES -->
+<div class="panel" id="panel-invoices">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+    <div class="stl" style="margin-bottom:0">📄 Invoices</div>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+      <select style="padding:6px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--white)" id="inv-fcl" onchange="renderInvoices()"></select>
+      <button class="btn bp bsm" onclick="openNewInvoice()">✏ New Invoice</button>
+      <button class="btn bs bsm" onclick="exportInvCSV()">⬇ CSV</button>
+    </div>
+  </div>
+  <div class="card mb5" id="inv-builder" style="display:none">
+    <div class="ch"><div class="ct">✏ Invoice Builder</div><button class="btn bs bsm" onclick="closeInvBuilder()">✕ Close</button></div>
+    <div class="cb">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end">
+        <div class="fi" style="min-width:180px"><label>Client</label><select id="ib-client" style="padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-size:13px;background:var(--white);outline:none" onchange="loadInvDeliveries()"></select></div>
+        <div class="fi"><label>Week Start (Monday)</label><input type="date" id="ib-mon" onchange="autoSetSun()"></div>
+        <div class="fi"><label>Week End (Sunday)</label><input type="date" id="ib-sun" onchange="loadInvDeliveries()"></div>
+        <div class="fi"><label>Invoice #</label><input type="text" id="ib-num" placeholder="Auto"></div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:13px;margin-bottom:13px">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📦 Select Deliveries to Include</div>
+        <div id="ib-dels"><div class="emp" style="padding:10px">Select client and week above</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+          <div style="font-size:12px;color:var(--text2)">Selected: <span id="ib-sel-lbs" style="font-family:'DM Mono',monospace;color:var(--green);font-weight:700">0 lbs</span></div>
+          <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)" id="ib-sel-amt">$0.00</div>
+        </div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Additional Line Items (optional)</div>
+      <table class="lit"><thead><tr><th style="width:40%">Description</th><th style="width:18%">Qty</th><th style="width:22%">Unit Price ($)</th><th style="width:15%">Total</th><th style="width:5%"></th></tr></thead><tbody id="ib-lines"></tbody></table>
+      <button class="btn bs bsm mb4" onclick="addLine()">+ Add Line</button>
+      <div class="fi mb4"><label>Notes / Payment Terms</label><textarea id="ib-notes" rows="2" style="width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;resize:vertical">Payment via Zelle: 561-558-7017 (Atef) or cfo@plusimportexportconsulting.com. No taxes applied. A $4,000 advance is required when balance reaches zero.</textarea></div>
+      <div class="fg2">
+        <button class="btn bog" onclick="previewInvoice()">👁 Preview</button>
+        <button class="btn bp" id="ib-save-btn" onclick="saveInvoice()">💾 Save Invoice</button>
+      </div>
+    </div>
+  </div>
+  <div class="card"><div id="inv-list"><div class="emp">No invoices saved yet. Click "New Invoice" to create one.</div></div></div>
+</div>
+
+<!-- HISTORY -->
+<div class="panel" id="panel-history">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+    <div class="stl" style="margin-bottom:0">Transaction History</div>
+    <select style="padding:6px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--white)" id="hcf" onchange="renderHistory()"></select>
+    <select style="padding:6px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--white)" id="htf" onchange="renderHistory()"><option value="all">All</option><option value="delivery">Deliveries</option><option value="payment">Payments</option></select>
+    <button class="btn bs bsm" style="margin-left:auto" onclick="exportTxCSV()">⬇ CSV</button>
+  </div>
+  <div class="card"><div class="tw"><table><thead><tr>
+    <th>Date</th><th>Type</th><th>Client</th><th>Truck</th>
+    <th class="tr">Gross</th><th class="tr">Tare</th><th class="tr">Net (lbs)</th><th class="tr">Amount</th>
+    <th>Receipts</th><th class="tr">Bal After</th><th></th>
+  </tr></thead><tbody id="hist-body"><tr><td colspan="11" class="emp">No transactions</td></tr></tbody></table></div></div>
+</div>
+
+<!-- TRUCKS -->
+<div class="panel" id="panel-trucks">
+  <div class="stl">🚚 Truck Fleet</div>
+  <div class="card mb5">
+    <div class="ch"><div class="ct">Add Truck</div></div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fi"><label>License Plate</label><input type="text" id="t-plate"></div>
+        <div class="fi"><label>Description</label><input type="text" id="t-desc"></div>
+        <div class="fi"><label>Driver</label><input type="text" id="t-driver"></div>
+        <div class="fi"><label>Tare Weight (lbs)</label><input type="number" id="t-tare" step="1" min="0"></div>
+      </div>
+      <button class="btn bp" onclick="saveTruck()">+ Add</button>
+    </div>
+  </div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>#</th><th>Plate</th><th>Desc</th><th>Driver</th><th class="tr">Tare</th><th class="tr">Deliveries</th><th></th></tr></thead>
+    <tbody id="trucks-body"><tr><td colspan="7" class="emp">No trucks</td></tr></tbody>
+  </table></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="panel" id="panel-settings">
+  <div class="stl">⚙ Settings</div>
+  <div class="card mb4"><div class="ch"><div class="ct">Default Billing</div></div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fi"><label>Default Rate ($/lb)</label><input type="number" id="s-rate" value="0.45" step="0.001" min="0"></div>
+        <div class="fi"><label>Advance Threshold ($)</label><input type="number" id="s-adv" value="4000" step="100"></div>
+        <div class="fi"><label>From Email</label><input type="text" value="info@aplusimportexportconsulting.com" readonly style="background:var(--bg);color:var(--text2);padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-size:13px"></div>
+      </div>
+      <button class="btn bp" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+  <div class="card mb4"><div class="ch"><div class="ct">Database Connection</div></div>
+    <div class="cb">
+      <div style="background:var(--green-pale);border:1px solid #C6E8D4;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px">
+        <strong>Connected to Supabase</strong><br>
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2)">pyxgneughgasaigmllsy.supabase.co</span>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">All data is automatically saved to your Supabase database in real time.</p>
+    </div>
+  </div>
+  <div class="card mb4"><div class="ch"><div class="ct">Balance Adjustment</div></div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fi"><label>Client</label><select id="s-bcl" style="padding:8px 11px;border:1px solid var(--border2);border-radius:7px;font-size:13px;background:var(--white);outline:none"></select></div>
+        <div class="fi"><label>Set Balance To ($)</label><input type="number" id="s-badj"></div>
+        <div class="fi"><label>Reason</label><input type="text" id="s-brsn"></div>
+      </div>
+      <button class="btn ba" onclick="adjBalance()">Set Balance</button>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><div class="ct" style="color:var(--red)">Danger Zone</div></div>
+    <div class="cb"><button class="btn br" onclick="confirmReset()">🗑 Clear All Data</button></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- INVOICE MODAL -->
+<div class="mo" id="inv-modal">
+  <div class="mb">
+    <div class="mt">📄 <span id="inv-m-title">Invoice</span></div>
+    <div id="inv-m-body"></div>
+    <div class="emc">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📧 Send by Email</div>
+      <div class="emf"><span class="eml">From</span><div class="emv">info@aplusimportexportconsulting.com</div></div>
+      <div class="emf"><span class="eml">To</span><div class="emv"><input type="email" id="em-to"></div></div>
+      <div class="emf"><span class="eml">CC</span><div class="emv"><input type="text" id="em-cc"></div></div>
+      <div class="emf"><span class="eml">Subj</span><div class="emv"><input type="text" id="em-sub"></div></div>
+    </div>
+    <div class="mac">
+      <button class="btn bs" onclick="closeInvModal()">Close</button>
+      <button class="btn bs" onclick="printInv()">🖨 Print</button>
+      <button class="btn bs" onclick="copyInvText()">📋 Copy</button>
+      <button class="btn bbl" onclick="emailInv()">📧 Open in Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lb"><button id="lb-x" onclick="closeLB()">✕</button><img id="lb-img" src="" alt=""><div id="lb-lbl"></div></div>
+
+<!-- LOADING -->
+<div id="loading"><div class="spinner"></div><div style="font-size:13px;color:var(--text2)">Syncing with Supabase…</div></div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  SUPABASE CONFIG
+// ═══════════════════════════════════════
+const SB_URL = 'https://pyxgneughgasaigmllsy.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5eGduZXVnaGdhc2FpZ21sbHN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5ODA2MDYsImV4cCI6MjA5NjU1NjYwNn0.-1xrVulq9uaymc2XCqLs3FzV1b4Z5NjUb-54YdNKr6M';
+
+const H = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
+
+async function sbGet(table, params=''){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}&order=id.desc`, {headers:H});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbInsert(table, data){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {method:'POST', headers:H, body:JSON.stringify(data)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbUpdate(table, id, data){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'PATCH', headers:H, body:JSON.stringify(data)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbDelete(table, id){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:H});
+  if(!r.ok) throw new Error(await r.text());
+}
+async function sbDeleteStr(table, id){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:H});
+  if(!r.ok) throw new Error(await r.text());
+}
+
+// In-memory cache
+let CLIENTS=[], TRUCKS=[], TXS=[], EXPS=[], INVS=[];
+let ACI = localStorage.getItem('aiec_aci')||null;
+let RATE_VAL = parseFloat(localStorage.getItem('aiec_rate')||0.45);
+let pendD=[], pendE=[], lineN=0, viewInvId=null, editCId=null;
+
+// ═══════════════════════════════════════
+//  INIT — LOAD ALL DATA
+// ═══════════════════════════════════════
+async function init(){
+  showLoad(true);
+  try {
+    await runSetupSQL();
+    const [cl, tk, tx, ex, iv] = await Promise.all([
+      sbGet('clients','select=*'),
+      sbGet('trucks','select=*'),
+      sbGet('transactions','select=*'),
+      sbGet('expenses','select=*'),
+      sbGet('invoices','select=*')
+    ]);
+    CLIENTS=cl||[]; TRUCKS=tk||[]; TXS=tx||[]; EXPS=ex||[]; INVS=iv||[];
+    setDbStatus(true);
+    refreshDD(); renderDash(); updateTruckDD();
+    toast('Connected to Supabase ✓','ok');
+  } catch(e){
+    setDbStatus(false);
+    toast('DB error: '+e.message,'err');
+    console.error(e);
+  }
+  showLoad(false);
+}
+
+// Create tables if they don't exist via RPC or catch gracefully
+async function runSetupSQL(){
+  // Try to create tables — if they exist Supabase will error, we catch silently
+  const sql = `
+    create table if not exists clients(id text primary key,name text,contact text,email text,phone text,address text,rate numeric,terms text,notes text,created_at text);
+    create table if not exists trucks(id bigint primary key,plate text,description text,driver text,tare numeric);
+    create table if not exists transactions(id bigint primary key,type text,client_id text,date text,truck text,ticket text,gross numeric,tare numeric,net numeric,amount numeric,method text,recipient text,note text,notes text,receipts jsonb default '[]');
+    create table if not exists expenses(id bigint primary key,date text,category text,amount numeric,vendor text,notes text,receipts jsonb default '[]');
+    create table if not exists invoices(id text primary key,client_id text,client_name text,mon text,sun text,total_net numeric,del_amt numeric,extra_amt numeric,grand_total numeric,rate numeric,num text,notes text,dels jsonb default '[]',lines jsonb default '[]',html text,saved_at text);
+  `;
+  try {
+    await fetch(`${SB_URL}/rest/v1/rpc/exec_sql`,{method:'POST',headers:H,body:JSON.stringify({sql})});
+  } catch(e){ /* tables may already exist */ }
+}
+
+function showLoad(v){document.getElementById('loading').classList.toggle('show',v);}
+function setDbStatus(ok){
+  document.getElementById('db-dot').className='db-dot '+(ok?'ok':'err');
+  document.getElementById('db-lbl').textContent=ok?'Supabase ✓':'Offline';
+}
+
+// ═══════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════
+const td=()=>new Date().toISOString().slice(0,10);
+const fd=d=>{if(!d)return'—';const[y,m,dd]=d.split('-');return`${m}/${dd}/${y}`};
+const isSun=()=>new Date().getDay()===0;
+const GCR=id=>{const c=CLIENTS.find(c=>c.id===id);return c&&c.rate?parseFloat(c.rate):RATE_VAL;}
+const GCB=id=>CLIENTS.find(c=>c.id===id)||null;
+function getCBal(cid){
+  let b=0;
+  TXS.forEach(t=>{
+    if(t.client_id!==cid)return;
+    if(t.type==='delivery')b+=parseFloat(t.amount||0);
+    else if(t.type==='payment')b-=parseFloat(t.amount||0);
+    else if(t.type==='adj')b=parseFloat(t.amount||0);
+  });
+  return b;
+}
+function wkBounds(ds){
+  const d=new Date(ds+'T12:00:00'),dy=d.getDay(),off=dy===0?-6:1-dy;
+  const mon=new Date(d);mon.setDate(d.getDate()+off);
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  return{mon:mon.toISOString().slice(0,10),sun:sun.toISOString().slice(0,10)};
+}
+const CW=()=>wkBounds(td());
+
+// ═══════════════════════════════════════
+//  RECEIPTS
+// ═══════════════════════════════════════
+function f2b64(f){return new Promise(r=>{const rd=new FileReader();rd.onload=e=>r({name:f.name,type:f.type,data:e.target.result});rd.readAsDataURL(f);})}
+async function handleFiles(inp,ctx){
+  for(const f of inp.files){const r=await f2b64(f);if(ctx==='d')pendD.push(r);else pendE.push(r);}
+  renderPend(ctx);inp.value='';
+}
+function renderPend(ctx){
+  const arr=ctx==='d'?pendD:pendE, id=ctx==='d'?'d-rp':'e-rp';
+  renderRFiles(arr,id,()=>{if(ctx==='d')pendD=[];else pendE=[];renderPend(ctx);});
+}
+function renderRFiles(arr,cid,onClear){
+  const el=document.getElementById(cid);if(!el)return;
+  el.innerHTML=arr.map(r=>r.type==='application/pdf'?
+    `<div class="rpdf" onclick="openPDF('${r.data}','${r.name}')" title="${r.name}">📄</div>`:
+    `<img class="rth" src="${r.data}" onclick="openLB('${r.data}','${r.name}')" title="${r.name}" alt="">`
+  ).join('');
+  if(arr.length)el.innerHTML+=`<button class="btn bs bsm" onclick="(${onClear.toString()})()">✕ Clear</button>`;
+}
+function renderRSaved(arr){
+  if(!arr||!arr.length)return'<span style="color:var(--text3);font-size:11px">—</span>';
+  return arr.map(r=>r.type==='application/pdf'?
+    `<div class="rpdf" style="width:32px;height:32px;font-size:13px;display:inline-flex" onclick="openPDF('${r.data}','${r.name}')" title="${r.name}">📄</div>`:
+    `<img class="rth" src="${r.data}" style="width:32px;height:32px" onclick="openLB('${r.data}','${r.name}')" title="${r.name}" alt="">`
+  ).join('');
+}
+function openLB(src,lbl){document.getElementById('lb-img').src=src;document.getElementById('lb-lbl').textContent=lbl||'';document.getElementById('lb').classList.add('open');}
+function closeLB(){document.getElementById('lb').classList.remove('open');}
+function openPDF(d,n){const a=document.createElement('a');a.href=d;a.target='_blank';a.download=n||'file.pdf';a.click();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLB();closeInvModal();}});
+
+// ═══════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  const tabs=['dashboard','delivery','payment','expenses','invoices','clients','history','trucks','settings'];
+  const idx=tabs.indexOf(id);if(idx>=0)document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  ({dashboard:renderDash,history:renderHistory,trucks:renderTrucks,clients:renderClients,
+    invoices:renderInvoices,expenses:renderExpenses,
+    payment:()=>{switchPayClient(document.getElementById('pay-csel').value);document.getElementById('p-date').value=td();}})[id]?.();
+}
+
+// ═══════════════════════════════════════
+//  CLIENTS
+// ═══════════════════════════════════════
+async function saveClient(){
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){toast('Name required','err');return;}
+  const row={id:'c_'+Date.now(),name,
+    contact:document.getElementById('c-contact').value.trim(),
+    email:document.getElementById('c-email').value.trim(),
+    phone:document.getElementById('c-phone').value.trim(),
+    address:document.getElementById('c-address').value.trim(),
+    rate:document.getElementById('c-rate').value?parseFloat(document.getElementById('c-rate').value):null,
+    terms:document.getElementById('c-terms').value,
+    notes:document.getElementById('c-notes').value.trim(),
+    created_at:td()};
+  showLoad(true);
+  try{await sbInsert('clients',row);CLIENTS.unshift(row);clearCForm();refreshDD();renderClients();
+    if(CLIENTS.length===1){ACI=row.id;localStorage.setItem('aiec_aci',ACI);renderDash();}
+    toast('Client added','ok');}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+async function updateClient(){
+  if(!editCId)return;
+  const i=CLIENTS.findIndex(c=>c.id===editCId);if(i<0)return;
+  const upd={name:document.getElementById('c-name').value.trim(),contact:document.getElementById('c-contact').value.trim(),
+    email:document.getElementById('c-email').value.trim(),phone:document.getElementById('c-phone').value.trim(),
+    address:document.getElementById('c-address').value.trim(),
+    rate:document.getElementById('c-rate').value?parseFloat(document.getElementById('c-rate').value):null,
+    terms:document.getElementById('c-terms').value,notes:document.getElementById('c-notes').value.trim()};
+  showLoad(true);
+  try{await sbUpdate('clients',editCId,upd);CLIENTS[i]={...CLIENTS[i],...upd};clearCForm();refreshDD();renderClients();renderDash();toast('Updated','ok');}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+function editClient(id){
+  const c=GCB(id);if(!c)return;editCId=id;
+  document.getElementById('c-name').value=c.name;document.getElementById('c-contact').value=c.contact||'';
+  document.getElementById('c-email').value=c.email||'';document.getElementById('c-phone').value=c.phone||'';
+  document.getElementById('c-address').value=c.address||'';document.getElementById('c-rate').value=c.rate||'';
+  document.getElementById('c-terms').value=c.terms||'Advance required';document.getElementById('c-notes').value=c.notes||'';
+  document.getElementById('c-upd-btn').style.display='';document.getElementById('c-can-btn').style.display='';
+  document.getElementById('cf-title').textContent='Edit Client';
+  document.querySelector('#panel-clients .card').scrollIntoView({behavior:'smooth'});
+}
+function cancelCEdit(){editCId=null;clearCForm();}
+function clearCForm(){
+  ['c-name','c-contact','c-email','c-phone','c-address','c-rate','c-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('c-terms').value='Advance required';
+  document.getElementById('c-upd-btn').style.display='none';document.getElementById('c-can-btn').style.display='none';
+  document.getElementById('cf-title').textContent='Add New Client';editCId=null;
+}
+async function deleteClient(id){
+  if(!confirm('Delete client + all transactions?'))return;
+  showLoad(true);
+  try{
+    await sbDeleteStr('clients',id);
+    CLIENTS=CLIENTS.filter(c=>c.id!==id);TXS=TXS.filter(t=>t.client_id!==id);INVS=INVS.filter(i=>i.client_id!==id);
+    if(ACI===id){ACI=null;localStorage.removeItem('aiec_aci');}
+    refreshDD();renderClients();renderDash();toast('Deleted');
+  }catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+function switchClient(id){ACI=id||null;localStorage.setItem('aiec_aci',ACI||'');renderDash();}
+function renderClients(){
+  const grid=document.getElementById('clients-grid');
+  if(!CLIENTS.length){grid.innerHTML='<div class="emp" style="grid-column:1/-1">No clients yet</div>';return;}
+  grid.innerHTML=CLIENTS.map(c=>{
+    const bal=getCBal(c.id);const dels=TXS.filter(t=>t.type==='delivery'&&t.client_id===c.id);
+    const lbs=dels.reduce((s,t)=>s+parseFloat(t.net||0),0);
+    return`<div class="cc ${c.id===ACI?'act':''}" onclick="switchClient('${c.id}');renderClients()">
+      ${c.id===ACI?'<span class="pill pg" style="position:absolute;top:10px;right:10px">Active</span>':''}
+      <div class="ccn">${c.name}</div><div class="cce">${c.email||c.phone||'—'}</div>
+      <div class="ccst">
+        <div><div class="ccv" style="color:${bal>0?'var(--red)':bal<0?'var(--green)':'var(--amber)'}">$${Math.abs(bal).toFixed(2)}</div><div class="ccl">${bal>0?'Due':bal<0?'Credit':'Settled'}</div></div>
+        <div><div class="ccv">${lbs.toLocaleString()}</div><div class="ccl">lbs</div></div>
+        <div><div class="ccv">${dels.length}</div><div class="ccl">deliveries</div></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px" onclick="event.stopPropagation()">
+        <button class="btn bog bsm" onclick="editClient('${c.id}');showPanel('clients')">Edit</button>
+        <button class="btn br bsm" onclick="deleteClient('${c.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+//  DELIVERY
+// ═══════════════════════════════════════
+function calcDel(){
+  const g=parseFloat(document.getElementById('d-gross').value)||0;
+  const t=parseFloat(document.getElementById('d-tare').value)||0;
+  const cid=document.getElementById('d-csel').value;
+  const rate=cid?GCR(cid):RATE_VAL;const net=Math.max(0,g-t);const amt=net*rate;
+  const nEl=document.getElementById('d-net');const aEl=document.getElementById('d-amt');
+  if(g>0&&t>0){nEl.className='cr';nEl.textContent=net.toLocaleString()+' lbs';aEl.className='cr';aEl.textContent='$'+amt.toFixed(2);}
+  else if(g>0){nEl.className='cr z';nEl.textContent='Enter tare weight';aEl.className='cr z';aEl.textContent='—';}
+  else{nEl.className='cr z';nEl.textContent='Enter both weights';aEl.className='cr z';aEl.textContent='—';}
+  document.getElementById('rate-il').textContent=rate.toFixed(3);
+}
+function onTruckSel(){
+  const p=document.getElementById('d-truck').value;
+  const tk=TRUCKS.find(t=>t.plate===p);
+  if(tk&&tk.tare){document.getElementById('d-tare').value=tk.tare;calcDel();}
+}
+async function saveDelivery(){
+  const g=parseFloat(document.getElementById('d-gross').value);
+  const t=parseFloat(document.getElementById('d-tare').value);
+  const cid=document.getElementById('d-csel').value;
+  if(!g||g<=0){toast('Enter gross weight','err');return;}
+  if(!t||t<=0){toast('Enter tare weight','err');return;}
+  if(t>=g){toast('Tare must be less than gross','err');return;}
+  if(!cid){toast('Select a client','err');return;}
+  const net=g-t;const rate=GCR(cid);const amount=parseFloat((net*rate).toFixed(2));
+  const row={id:Date.now(),type:'delivery',client_id:cid,
+    date:document.getElementById('d-date').value||td(),
+    truck:document.getElementById('d-truck').value,
+    ticket:document.getElementById('d-ticket').value.trim(),
+    gross:g,tare:t,net,amount,
+    notes:document.getElementById('d-notes').value.trim(),
+    receipts:pendD};
+  setBtn('d-save-btn',false);showLoad(true);
+  try{await sbInsert('transactions',row);TXS.unshift(row);
+    toast(`Saved — ${net.toLocaleString()} lbs · $${amount.toFixed(2)}`,'ok');
+    clearDelForm();renderDash();}
+  catch(e){toast('Error: '+e.message,'err');}
+  setBtn('d-save-btn',true);showLoad(false);
+}
+function clearDelForm(){
+  ['d-gross','d-tare','d-ticket','d-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('d-date').value=td();
+  document.getElementById('d-net').textContent='Enter both weights';document.getElementById('d-net').className='cr z';
+  document.getElementById('d-amt').textContent='—';document.getElementById('d-amt').className='cr z';
+  pendD=[];renderPend('d');
+}
+
+// ═══════════════════════════════════════
+//  EXPENSES
+// ═══════════════════════════════════════
+async function saveExpense(){
+  const amt=parseFloat(document.getElementById('e-amt').value);
+  if(!amt||amt<=0){toast('Enter amount','err');return;}
+  const row={id:Date.now(),date:document.getElementById('e-date').value||td(),
+    category:document.getElementById('e-cat').value,amount:parseFloat(amt.toFixed(2)),
+    vendor:document.getElementById('e-vendor').value.trim(),
+    notes:document.getElementById('e-notes').value.trim(),receipts:pendE};
+  setBtn('e-save-btn',false);showLoad(true);
+  try{await sbInsert('expenses',row);EXPS.unshift(row);
+    toast('Expense saved — $'+amt.toFixed(2),'ok');
+    ['e-amt','e-vendor','e-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('e-date').value=td();pendE=[];renderPend('e');renderExpenses();}
+  catch(e){toast('Error: '+e.message,'err');}
+  setBtn('e-save-btn',true);showLoad(false);
+}
+async function deleteExpense(id){
+  if(!confirm('Delete expense?'))return;showLoad(true);
+  try{await sbDelete('expenses',id);EXPS=EXPS.filter(e=>e.id!==id);renderExpenses();toast('Deleted');}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+async function addReceiptToExpense(inp,id){
+  const i=EXPS.findIndex(e=>e.id===id);if(i<0)return;
+  const arr=[...(EXPS[i].receipts||[])];
+  for(const f of inp.files){const r=await f2b64(f);arr.push(r);}
+  showLoad(true);
+  try{await sbUpdate('expenses',id,{receipts:arr});EXPS[i].receipts=arr;renderExpenses();toast('Receipt added','ok');}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);inp.value='';
+}
+const CAT_STYLE={Fuel:'ef',Insurance:'ei',Rental:'er',Other:'eo'};
+const CAT_ICON={Fuel:'⛽',Insurance:'🛡',Rental:'🚐',Other:'📦'};
+function renderExpenses(){
+  const filter=document.getElementById('exp-filter')?.value||'all';
+  const cats=['Fuel','Insurance','Rental','Other'];
+  document.getElementById('exp-summary').innerHTML=cats.map(c=>{
+    const s=EXPS.filter(e=>e.category===c).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    return`<div class="sc"><div class="sl">${CAT_ICON[c]} ${c}</div><div class="sv" style="color:var(--red);font-size:18px">$${s.toFixed(2)}</div><div class="ss">${EXPS.filter(e=>e.category===c).length} entries</div></div>`;
+  }).join('')+`<div class="sc"><div class="sl">Total</div><div class="sv r" style="font-size:18px">$${EXPS.reduce((s,e)=>s+parseFloat(e.amount||0),0).toFixed(2)}</div><div class="ss">${EXPS.length} entries</div></div>`;
+  const exps=(filter==='all'?EXPS:EXPS.filter(e=>e.category===filter)).slice().sort((a,b)=>b.date?.localeCompare(a.date));
+  const el=document.getElementById('exp-list');
+  if(!exps.length){el.innerHTML='<div class="card"><div class="emp">No expenses yet</div></div>';return;}
+  el.innerHTML=exps.map(e=>`<div class="exp-entry">
+    <div class="exp-eh">
+      <span class="ecat ${CAT_STYLE[e.category]||'eo'}">${CAT_ICON[e.category]||'📦'} ${e.category}</span>
+      <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);font-size:15px">$${parseFloat(e.amount||0).toFixed(2)}</span>
+      <span style="font-size:12px;color:var(--text2)">${fd(e.date)}</span>
+      <span style="font-size:12px;font-weight:600">${e.vendor||'—'}</span>
+      ${e.notes?`<span style="font-size:11px;color:var(--text3)">${e.notes}</span>`:''}
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <div style="display:flex;gap:4px">${renderRSaved(e.receipts)}</div>
+        <label class="btn bog bsm" style="cursor:pointer;position:relative">📎 Add
+          <input type="file" accept="image/*,application/pdf" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="addReceiptToExpense(this,${e.id})">
+        </label>
+        <button class="btn br bsm" onclick="deleteExpense(${e.id})">✕</button>
+      </div>
+    </div>
+  </div>`).join('');
+}
+function exportExpCSV(){const e=EXPS.slice().sort((a,b)=>a.date?.localeCompare(b.date));let csv='Date,Category,Vendor,Amount($),Notes,Receipts\n';e.forEach(r=>{csv+=`${r.date},${r.category},"${r.vendor||''}",${r.amount},"${r.notes||''}",${(r.receipts||[]).length}\n`;});dl(csv,'aiec_expenses_'+td()+'.csv');}
+
+// ═══════════════════════════════════════
+//  PAYMENT
+// ═══════════════════════════════════════
+function switchPayClient(id){
+  const c=GCB(id);document.getElementById('pay-cn').textContent=c?c.name:'select client';
+  const bal=id?getCBal(id):0;const el=document.getElementById('pay-bal');
+  el.textContent='$'+Math.abs(bal).toFixed(2)+(bal<0?' CR':'');
+  el.className='bv '+(bal>0?'p':bal<0?'n':'z');
+}
+function toggleZ(){const m=document.getElementById('p-meth').value;document.getElementById('z-fields').style.display=m==='Zelle'?'':'none';document.getElementById('split-sec').style.display='none';}
+function calcSplit(){const to=document.getElementById('p-zto')?.value;if(to==='Split'){document.getElementById('split-sec').style.display='';calcSplitP();}else document.getElementById('split-sec').style.display='none';}
+function calcSplitP(){const a=parseFloat(document.getElementById('p-amt').value)||0;const at=parseFloat(document.getElementById('sp-atef').value)||0;document.getElementById('sp-part').textContent='$'+(a-at).toFixed(2);}
+async function savePayment(){
+  const amt=parseFloat(document.getElementById('p-amt').value);
+  const cid=document.getElementById('pay-csel').value;
+  if(!amt||amt<=0){toast('Enter amount','err');return;}if(!cid){toast('Select client','err');return;}
+  const method=document.getElementById('p-meth').value;let recipient='';
+  if(method==='Zelle'){const to=document.getElementById('p-zto').value;if(to==='Split'){const a=parseFloat(document.getElementById('sp-atef').value)||0;recipient=`Split: Atef $${a.toFixed(2)} + Partner $${(amt-a).toFixed(2)}`;}else recipient=to;}
+  const row={id:Date.now(),type:'payment',client_id:cid,date:document.getElementById('p-date').value||td(),amount:parseFloat(amt.toFixed(2)),method,recipient,note:document.getElementById('p-note').value.trim()};
+  setBtn('p-save-btn',false);showLoad(true);
+  try{await sbInsert('transactions',row);TXS.unshift(row);
+    toast('Payment recorded — $'+amt.toFixed(2),'ok');
+    ['p-amt','p-note'].forEach(id=>document.getElementById(id).value='');
+    switchPayClient(cid);renderDash();}
+  catch(e){toast('Error: '+e.message,'err');}
+  setBtn('p-save-btn',true);showLoad(false);
+}
+
+// ═══════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════
+function renderDash(){
+  const{mon,sun}=CW();const c=GCB(ACI);const rate=ACI?GCR(ACI):RATE_VAL;
+  const sa=document.getElementById('sun-alert');
+  if(isSun()){sa.style.display='flex';document.getElementById('sun-sub').textContent=`Week ${fd(mon)}–${fd(sun)} closing.${c?' Invoice for '+c.name+'.':''}`;}
+  else sa.style.display='none';
+  document.getElementById('ch-name').textContent=c?c.name:'No client selected';
+  document.getElementById('ch-rate').textContent=rate.toFixed(3);
+  document.getElementById('rate-badge').textContent='$'+rate.toFixed(3)+'/lb';
+  document.getElementById('rate-il').textContent=rate.toFixed(3);
+  if(ACI){
+    const bal=getCBal(ACI);
+    const chB=document.getElementById('ch-bal');
+    chB.textContent='$'+Math.abs(bal).toFixed(2)+(bal<0?' CR':'');
+    chB.className='hsv'+(bal>8000?' d':bal<500?' w':'');
+    const wDels=TXS.filter(t=>t.type==='delivery'&&t.client_id===ACI&&t.date>=mon&&t.date<=sun).sort((a,b)=>a.date?.localeCompare(b.date));
+    const wLbs=wDels.reduce((s,t)=>s+parseFloat(t.net||0),0);const wAmt=wDels.reduce((s,t)=>s+parseFloat(t.amount||0),0);
+    document.getElementById('ch-wlbs').textContent=wLbs.toLocaleString()+' lbs';
+    document.getElementById('ch-wamt').textContent='$'+wAmt.toFixed(2);
+    document.getElementById('wk-period').textContent=`${fd(mon)} — ${fd(sun)}`;
+    const listEl=document.getElementById('wk-list');
+    if(!wDels.length)listEl.innerHTML='<div class="emp">No deliveries this week (Mon–Sun)</div>';
+    else listEl.innerHTML=wDels.map(d=>`<div class="wr">
+      <span class="wr-d">${fd(d.date)}</span>
+      <span class="wr-t">${d.truck||d.ticket||'—'}</span>
+      <span class="wr-w">${parseFloat(d.net||0).toLocaleString()} lbs</span>
+      <span class="wr-a">$${parseFloat(d.amount||0).toFixed(2)}</span>
+      ${(d.receipts&&d.receipts.length)?`<span style="margin-left:4px">${renderRSaved(d.receipts)}</span>`:''}
+    </div>`).join('');
+    document.getElementById('wk-lbs-lbl').textContent=wLbs.toLocaleString()+' lbs ·';
+    document.getElementById('wk-total').textContent='$'+wAmt.toFixed(2);
+    const aDs=TXS.filter(t=>t.type==='delivery'&&t.client_id===ACI);
+    const aPs=TXS.filter(t=>t.type==='payment'&&t.client_id===ACI);
+    const tLbs=aDs.reduce((s,t)=>s+parseFloat(t.net||0),0);const tRev=aDs.reduce((s,t)=>s+parseFloat(t.amount||0),0);const tPd=aPs.reduce((s,t)=>s+parseFloat(t.amount||0),0);
+    const fBal=getCBal(ACI);
+    document.getElementById('s-lbs').textContent=tLbs.toLocaleString()+' lbs';
+    document.getElementById('s-dels').textContent=aDs.length+' deliveries';
+    document.getElementById('s-rev').textContent='$'+tRev.toFixed(2);
+    document.getElementById('s-paid').textContent='$'+tPd.toFixed(2);
+    document.getElementById('s-pct').textContent=aPs.length+' payments';
+    const sb=document.getElementById('s-bal');sb.textContent='$'+Math.abs(fBal).toFixed(2);sb.className='sv '+(fBal>0?'r':fBal<0?'g':'');
+    document.getElementById('s-bsub').textContent=fBal>0?'Client owes AIEC':fBal<0?'AIEC owes client':'Settled';
+  }else{
+    ['ch-bal','ch-wlbs','ch-wamt'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('wk-list').innerHTML='<div class="emp">Select a client above</div>';
+    document.getElementById('wk-lbs-lbl').textContent='';document.getElementById('wk-total').textContent='$0.00';
+  }
+}
+
+// ═══════════════════════════════════════
+//  INVOICE BUILDER
+// ═══════════════════════════════════════
+function openNewInvoice(){
+  document.getElementById('inv-builder').style.display='';
+  const{mon,sun}=CW();
+  document.getElementById('ib-mon').value=mon;document.getElementById('ib-sun').value=sun;
+  refreshIBDD();if(ACI)document.getElementById('ib-client').value=ACI;
+  document.getElementById('ib-num').value='';document.getElementById('ib-lines').innerHTML='';lineN=0;
+  document.getElementById('ib-notes').value='Payment via Zelle: 561-558-7017 (Atef) or cfo@plusimportexportconsulting.com. No taxes applied. A $4,000 advance is required when balance reaches zero.';
+  loadInvDeliveries();document.getElementById('inv-builder').scrollIntoView({behavior:'smooth'});
+}
+function closeInvBuilder(){document.getElementById('inv-builder').style.display='none';}
+function autoSetSun(){
+  const mon=document.getElementById('ib-mon').value;if(!mon)return;
+  const d=new Date(mon+'T12:00:00');d.setDate(d.getDate()+6);
+  document.getElementById('ib-sun').value=d.toISOString().slice(0,10);loadInvDeliveries();
+}
+function refreshIBDD(){
+  const sel=document.getElementById('ib-client');
+  sel.innerHTML='<option value="">— Select client —</option>'+CLIENTS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+function loadInvDeliveries(){
+  const cid=document.getElementById('ib-client').value;
+  const mon=document.getElementById('ib-mon').value;const sun=document.getElementById('ib-sun').value;
+  if(!cid||!mon||!sun){document.getElementById('ib-dels').innerHTML='<div class="emp" style="padding:10px">Select client and week</div>';return;}
+  const dels=TXS.filter(t=>t.type==='delivery'&&t.client_id===cid&&t.date>=mon&&t.date<=sun).sort((a,b)=>a.date?.localeCompare(b.date));
+  const el=document.getElementById('ib-dels');
+  if(!dels.length){el.innerHTML='<div class="emp" style="padding:10px">No deliveries in this range</div>';calcIBTotals();return;}
+  el.innerHTML=dels.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--white);border:1px solid var(--border);border-radius:6px;margin-bottom:5px;font-size:12px">
+    <input type="checkbox" id="ck-${d.id}" value="${d.id}" checked onchange="calcIBTotals()" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0">
+    <span style="color:var(--text2);width:65px;flex-shrink:0">${fd(d.date)}</span>
+    <span style="color:var(--text3);flex:1;font-size:11px">${d.truck||d.ticket||'—'}</span>
+    <span style="font-family:'DM Mono',monospace;font-weight:600;min-width:75px;text-align:right">${parseFloat(d.net||0).toLocaleString()} lbs</span>
+    <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--green);min-width:65px;text-align:right">$${parseFloat(d.amount||0).toFixed(2)}</span>
+  </div>`).join('');
+  calcIBTotals();
+}
+function getCheckedDels(){
+  const cid=document.getElementById('ib-client').value;
+  const mon=document.getElementById('ib-mon').value;const sun=document.getElementById('ib-sun').value;
+  if(!cid||!mon||!sun)return[];
+  return TXS.filter(t=>t.type==='delivery'&&t.client_id===cid&&t.date>=mon&&t.date<=sun)
+    .filter(d=>{const ck=document.getElementById('ck-'+d.id);return ck&&ck.checked;});
+}
+function calcIBTotals(){
+  const dels=getCheckedDels();const lbs=dels.reduce((s,t)=>s+parseFloat(t.net||0),0);const amt=dels.reduce((s,t)=>s+parseFloat(t.amount||0),0);
+  const extra=getExtraLineTotal();
+  document.getElementById('ib-sel-lbs').textContent=lbs.toLocaleString()+' lbs';
+  document.getElementById('ib-sel-amt').textContent='$'+(amt+extra).toFixed(2);
+}
+function addLine(){
+  lineN++;const row=document.createElement('tr');row.id='li-'+lineN;
+  row.innerHTML=`<td><input type="text" placeholder="Description" id="ld-${lineN}"></td>
+    <td><input type="number" value="1" id="lq-${lineN}" min="0" step="1" style="width:60px" oninput="calcIBTotals()"></td>
+    <td><input type="number" placeholder="0.00" id="lp-${lineN}" min="0" step="0.01" style="width:88px" oninput="calcIBTotals()"></td>
+    <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--green);padding:0 8px" id="lt-${lineN}">$0.00</td>
+    <td><button class="btn bs bsm" onclick="document.getElementById('li-${lineN}').remove();calcIBTotals()">✕</button></td>`;
+  document.getElementById('ib-lines').appendChild(row);
+}
+function getExtraLines(){
+  return Array.from(document.getElementById('ib-lines').querySelectorAll('tr')).map(r=>{
+    const n=r.id.replace('li-','');
+    const desc=document.getElementById('ld-'+n)?.value?.trim()||'';
+    const qty=parseFloat(document.getElementById('lq-'+n)?.value)||1;
+    const price=parseFloat(document.getElementById('lp-'+n)?.value)||0;
+    if(!desc&&!price)return null;return{desc,qty,price};
+  }).filter(Boolean);
+}
+function getExtraLineTotal(){return getExtraLines().reduce((s,l)=>s+(l.qty*l.price),0);}
+function buildInvData(){
+  const cid=document.getElementById('ib-client').value;
+  const mon=document.getElementById('ib-mon').value;const sun=document.getElementById('ib-sun').value;
+  if(!cid||!mon||!sun)return null;
+  const dels=getCheckedDels();const lines=getExtraLines();const rate=GCR(cid);
+  const totalNet=dels.reduce((s,t)=>s+parseFloat(t.net||0),0);
+  const delAmt=dels.reduce((s,t)=>s+parseFloat(t.amount||0),0);
+  const extraAmt=lines.reduce((s,l)=>s+(l.qty*l.price),0);
+  const grandTotal=delAmt+extraAmt;
+  const num=document.getElementById('ib-num').value.trim()||('AIEC-'+mon.replace(/-/g,'')+'-'+sun.replace(/-/g,''));
+  const notes=document.getElementById('ib-notes').value.trim();
+  const client=GCB(cid);
+  return{cid,client,mon,sun,dels:dels.map(d=>({date:d.date,truck:d.truck,ticket:d.ticket,gross:d.gross,tare:d.tare,net:parseFloat(d.net||0),amt:parseFloat(d.amount||0)})),
+    lines,rate,totalNet,delAmt,extraAmt,grandTotal,num,notes,clientName:client?.name||''};
+}
+function previewInvoice(){const data=buildInvData();if(!data){toast('Select client and dates','err');return;}openInvModal(data,false);}
+async function saveInvoice(){
+  const data=buildInvData();if(!data){toast('Select client and dates','err');return;}
+  const html=buildInvHTML(data);
+  const row={id:data.num,client_id:data.cid,client_name:data.clientName,mon:data.mon,sun:data.sun,
+    total_net:data.totalNet,del_amt:data.delAmt,extra_amt:data.extraAmt,grand_total:data.grandTotal,
+    rate:data.rate,num:data.num,notes:data.notes,dels:data.dels,lines:data.lines,html,saved_at:new Date().toISOString()};
+  setBtn('ib-save-btn',false);showLoad(true);
+  try{
+    // Upsert — delete then insert
+    try{await sbDeleteStr('invoices',data.num);}catch(e){}
+    await sbInsert('invoices',row);
+    const ei=INVS.findIndex(i=>i.id===data.num);
+    if(ei>=0)INVS[ei]={...row,data};else INVS.unshift({...row});
+    renderInvoices();openInvModal({...data,html},true);
+    toast('Invoice saved: '+data.num,'ok');
+  }catch(e){toast('Error: '+e.message,'err');}
+  setBtn('ib-save-btn',true);showLoad(false);
+}
+function buildInvHTML(data){
+  const{client,dels,lines,rate,totalNet,delAmt,grandTotal,num,mon,sun,notes}=data;
+  const c=client||GCB(data.cid);
+  const rows=dels.length?dels.map(d=>`<tr>
+    <td>${fd(d.date)}</td><td style="font-family:'DM Mono',monospace;font-size:11px">${d.ticket||'—'}</td><td>${d.truck||'—'}</td>
+    <td style="text-align:right;font-family:'DM Mono',monospace">${parseFloat(d.gross||0).toLocaleString()}</td>
+    <td style="text-align:right;font-family:'DM Mono',monospace">${parseFloat(d.tare||0).toLocaleString()}</td>
+    <td style="text-align:right;font-family:'DM Mono',monospace;font-weight:600">${parseFloat(d.net||0).toLocaleString()}</td>
+    <td style="text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#006633">$${parseFloat(d.amt||0).toFixed(2)}</td>
+  </tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:#9CA3AF;padding:16px">No deliveries selected</td></tr>';
+  const extRows=(lines||[]).map(l=>`<tr><td colspan="5" style="font-size:12px">${l.desc}</td><td style="text-align:right;font-family:'DM Mono',monospace">${l.qty}×</td><td style="text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#006633">$${(l.qty*l.price).toFixed(2)}</td></tr>`).join('');
+  return`<div class="ivp"><div class="ivh"><div><div class="ivlogo">A<span>+</span>IEC</div><div style="font-size:11px;color:#6B7280;margin-top:2px">A Plus Import Export Consulting LLC</div><div style="font-size:10px;color:#9CA3AF">Boca Raton, FL · info@aplusimportexportconsulting.com · 561-558-7017</div></div>
+    <div><div class="ivnum">INVOICE</div><div class="ivdl"># ${num}</div><div class="ivdl">Date: ${fd(td())}</div><div class="ivdl">Period: ${fd(mon)} – ${fd(sun)}</div></div></div>
+    <hr class="ivhr"><div class="ivpar"><div><h4>From</h4><p><span class="nm">A Plus Import Export Consulting LLC</span><br>Boca Raton, FL<br>561-558-7017</p></div>
+    <div><h4>Bill To</h4><p><span class="nm">${c?.name||'—'}</span>${c?.address?'<br>'+c.address:''}${c?.email?'<br>'+c.email:''}</p></div></div>
+    <table class="ivt"><thead><tr><th>Date</th><th>Ticket #</th><th>Truck</th><th style="text-align:right">Gross</th><th style="text-align:right">Tare</th><th style="text-align:right">Net (lbs)</th><th style="text-align:right">Amount</th></tr></thead>
+    <tbody>${rows}${extRows}</tbody></table>
+    <div class="ivtot">${dels.length?`<div class="ivtr"><span>Total Net Weight</span><span>${totalNet.toLocaleString()} lbs</span></div><div class="ivtr"><span>Rate</span><span>$${rate.toFixed(3)}/lb</span></div>`:''}
+    <div class="ivtr" style="font-size:11px;color:#9CA3AF"><span>Tax</span><span>None</span></div>
+    <div class="ivtr grand"><span>TOTAL DUE</span><span>$${grandTotal.toFixed(2)}</span></div></div>
+    <div class="ivft">${notes||'Payment via Zelle: <strong>561-558-7017</strong> (Atef) or <strong>cfo@plusimportexportconsulting.com</strong>. No taxes applied.'}</div></div>`;
+}
+
+// ═══════════════════════════════════════
+//  INVOICE MODAL
+// ═══════════════════════════════════════
+function openInvModal(data,saved){
+  const html=(saved&&data.html)?data.html:buildInvHTML(data);
+  document.getElementById('inv-m-body').innerHTML=html;
+  document.getElementById('inv-m-title').textContent=data.num||data.id||'Invoice';
+  const c=data.client||GCB(data.cid||data.client_id);
+  document.getElementById('em-to').value=c?.email||'';
+  document.getElementById('em-sub').value=`AIEC Invoice ${data.num||data.id} — ${fd(data.mon)} to ${fd(data.sun)}`;
+  document.getElementById('em-cc').value='';
+  viewInvId=data.num||data.id||null;
+  document.getElementById('inv-modal').classList.add('open');
+}
+function viewSavedInv(id){const inv=INVS.find(i=>i.id===id||i.num===id);if(!inv)return;openInvModal({...inv,cid:inv.client_id},true);}
+function closeInvModal(){document.getElementById('inv-modal').classList.remove('open');}
+function printInv(){
+  const w=window.open('','_blank');
+  w.document.write('<html><head><title>AIEC Invoice</title><style>body{font-family:sans-serif;padding:28px;color:#111}.ivlogo{font-size:19px;font-weight:800;color:#006633}.ivlogo span{color:#C8192D}table{width:100%;border-collapse:collapse}th,td{padding:7px;border-bottom:1px solid #eee}th{font-size:10px;text-transform:uppercase;color:#999}.ivtot{margin-left:auto;width:240px}</style></head><body>');
+  w.document.write(document.getElementById('inv-m-body').innerHTML);
+  w.document.write('</body></html>');w.document.close();w.print();
+}
+function copyInvText(){
+  const inv=INVS.find(i=>i.id===viewInvId||i.num===viewInvId);if(!inv){toast('Save first','err');return;}
+  let txt=`AIEC INVOICE — ${inv.client_name}\n# ${inv.num||inv.id}\nPeriod: ${fd(inv.mon)} – ${fd(inv.sun)}\n${'─'.repeat(46)}\n`;
+  (inv.dels||[]).forEach(d=>{txt+=`${fd(d.date)}  ${d.truck||'—'}  ${parseFloat(d.net||0).toLocaleString()} lbs  $${parseFloat(d.amt||0).toFixed(2)}\n`;});
+  txt+=`${'─'.repeat(46)}\nTotal Net: ${(inv.total_net||0).toLocaleString()} lbs × $${(inv.rate||0).toFixed(3)}/lb\nTOTAL DUE: $${(inv.grand_total||0).toFixed(2)}\nNo taxes\nZelle: 561-558-7017`;
+  navigator.clipboard.writeText(txt).then(()=>toast('Copied!','ok'));
+}
+function emailInv(){
+  const to=encodeURIComponent(document.getElementById('em-to').value||'');
+  const cc=encodeURIComponent(document.getElementById('em-cc').value||'');
+  const sub=encodeURIComponent(document.getElementById('em-sub').value||'AIEC Invoice');
+  const inv=INVS.find(i=>i.id===viewInvId||i.num===viewInvId);
+  let body='Please find the AIEC weekly invoice below.\n\n';
+  if(inv){body+=`Invoice: ${inv.num||inv.id}\nPeriod: ${fd(inv.mon)} – ${fd(inv.sun)}\nTotal Net: ${(inv.total_net||0).toLocaleString()} lbs\nTotal Due: $${(inv.grand_total||0).toFixed(2)}\n\nPayment via Zelle: 561-558-7017 (Atef) or cfo@plusimportexportconsulting.com\n\nThank you.\n\nA Plus Import Export Consulting LLC | Boca Raton, FL | 561-558-7017`;}
+  window.open(`mailto:${to}?cc=${cc}&subject=${sub}&body=${encodeURIComponent(body)}`,'_blank');
+}
+function renderInvoices(){
+  const fc=document.getElementById('inv-fcl')?.value||'';
+  let invs=fc?INVS.filter(i=>i.client_id===fc):INVS;
+  const el=document.getElementById('inv-list');
+  if(!invs.length){el.innerHTML='<div class="emp">No invoices saved yet. Click "New Invoice" to create one.</div>';return;}
+  el.innerHTML=invs.map(inv=>`<div class="ihr">
+    <div class="ihn">${inv.num||inv.id}</div>
+    <div class="ihc">${inv.client_name}</div>
+    <div class="ihp">${fd(inv.mon)} – ${fd(inv.sun)}</div>
+    <div class="iha">$${parseFloat(inv.grand_total||0).toFixed(2)}</div>
+    <span class="pill pg">Saved</span>
+    <div class="ihac">
+      <button class="btn bs bsm" onclick="viewSavedInv('${inv.id||inv.num}')">View</button>
+      <button class="btn bog bsm" onclick="viewSavedInv('${inv.id||inv.num}');setTimeout(emailInv,500)">📧</button>
+      <button class="btn br bsm" onclick="deleteInv('${inv.id||inv.num}')">✕</button>
+    </div>
+  </div>`).join('');
+}
+async function deleteInv(id){
+  if(!confirm('Delete invoice?'))return;showLoad(true);
+  try{await sbDeleteStr('invoices',id);INVS=INVS.filter(i=>i.id!==id&&i.num!==id);renderInvoices();toast('Deleted');}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+function exportInvCSV(){let csv='Invoice #,Client,Period Start,Period End,Net Weight,Total ($),Rate,Saved\n';INVS.forEach(v=>{csv+=`${v.num||v.id},"${v.client_name}",${v.mon},${v.sun},${v.total_net||''},${v.grand_total||''},${v.rate||''},"${v.saved_at}"\n`;});dl(csv,'aiec_invoices_'+td()+'.csv');}
+
+// ═══════════════════════════════════════
+//  HISTORY
+// ═══════════════════════════════════════
+function renderHistory(){
+  const cf=document.getElementById('hcf')?.value||'';const tf=document.getElementById('htf')?.value||'all';
+  let txs=TXS.filter(t=>(cf?t.client_id===cf:true)&&(tf==='all'||t.type===tf)).slice().sort((a,b)=>b.date?.localeCompare(a.date)||b.id-a.id);
+  const chrono=TXS.slice().sort((a,b)=>a.date?.localeCompare(b.date)||a.id-b.id);
+  const rm={};const bm={};
+  chrono.forEach(t=>{const k=t.client_id||'_';if(!rm[k])rm[k]=0;
+    if(t.type==='delivery')rm[k]+=parseFloat(t.amount||0);
+    else if(t.type==='payment')rm[k]-=parseFloat(t.amount||0);
+    else if(t.type==='adj')rm[k]=parseFloat(t.amount||0);
+    bm[t.id]=rm[k];});
+  const tbody=document.getElementById('hist-body');
+  if(!txs.length){tbody.innerHTML='<tr><td colspan="11" class="emp">No transactions</td></tr>';return;}
+  tbody.innerHTML=txs.map(t=>{
+    const cn=(CLIENTS.find(c=>c.id===t.client_id)||{name:'—'}).name;
+    const isD=t.type==='delivery';const isPy=t.type==='payment';
+    const det=isPy?(t.method+(t.recipient?' · '+t.recipient.substring(0,24):'')):'';
+    const aC=isD?`<span class="tg tm">+$${parseFloat(t.amount||0).toFixed(2)}</span>`:isPy?`<span class="tr2 tm">-$${parseFloat(t.amount||0).toFixed(2)}</span>`:`<span class="ta tm">ADJ $${parseFloat(t.amount||0).toFixed(2)}</span>`;
+    const b=bm[t.id]??0;const bC=`<span class="tm ${b>0?'ta':''}">${b>=0?'$'+b.toFixed(2):'-$'+Math.abs(b).toFixed(2)}</span>`;
+    return`<tr>
+      <td>${fd(t.date)}</td>
+      <td><span class="pill ${isD?'pg':isPy?'pb':'pa'}">${t.type}</span></td>
+      <td><b>${cn}</b>${det?`<br><span style="color:var(--text3);font-size:11px">${det}</span>`:''}</td>
+      <td class="tm" style="font-size:11px">${t.truck||''}</td>
+      <td class="tr tm">${isD?parseFloat(t.gross||0).toLocaleString():'—'}</td>
+      <td class="tr tm">${isD?parseFloat(t.tare||0).toLocaleString():'—'}</td>
+      <td class="tr tm">${isD?parseFloat(t.net||0).toLocaleString():'—'}</td>
+      <td class="tr">${aC}</td>
+      <td><div style="display:flex;gap:4px">${renderRSaved(t.receipts)}</div></td>
+      <td class="tr">${bC}</td>
+      <td><button class="btn bs bsm" onclick="delTx(${t.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+async function delTx(id){
+  if(!confirm('Delete transaction?'))return;showLoad(true);
+  try{await sbDelete('transactions',id);TXS=TXS.filter(t=>t.id!==id);renderHistory();renderDash();toast('Deleted');}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+
+// ═══════════════════════════════════════
+//  TRUCKS
+// ═══════════════════════════════════════
+async function saveTruck(){
+  const p=document.getElementById('t-plate').value.trim().toUpperCase();if(!p){toast('Enter plate','err');return;}
+  const row={id:Date.now(),plate:p,description:document.getElementById('t-desc').value.trim(),driver:document.getElementById('t-driver').value.trim(),tare:parseFloat(document.getElementById('t-tare').value)||0};
+  showLoad(true);
+  try{await sbInsert('trucks',row);TRUCKS.unshift(row);
+    ['t-plate','t-desc','t-driver','t-tare'].forEach(id=>document.getElementById(id).value='');
+    renderTrucks();updateTruckDD();toast('Truck added','ok');}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+async function delTruck(id){
+  if(!confirm('Delete truck?'))return;showLoad(true);
+  try{await sbDelete('trucks',id);TRUCKS=TRUCKS.filter(t=>t.id!==id);renderTrucks();updateTruckDD();toast('Deleted');}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+function renderTrucks(){
+  const tbody=document.getElementById('trucks-body');
+  if(!TRUCKS.length){tbody.innerHTML='<tr><td colspan="7" class="emp">No trucks</td></tr>';return;}
+  tbody.innerHTML=TRUCKS.map((t,i)=>{const d=TXS.filter(tx=>tx.truck===t.plate).length;
+    return`<tr><td>${i+1}</td><td class="tm">${t.plate}</td><td>${t.description||'—'}</td><td>${t.driver||'—'}</td><td class="tr tm">${t.tare?parseFloat(t.tare).toLocaleString():'—'}</td><td class="tr tm">${d}</td><td><button class="btn bs bsm" onclick="delTruck(${t.id})">✕</button></td></tr>`;
+  }).join('');
+}
+function updateTruckDD(){
+  const sel=document.getElementById('d-truck');const cur=sel.value;
+  sel.innerHTML='<option value="">— Select truck —</option>'+TRUCKS.map(t=>`<option value="${t.plate}" ${t.plate===cur?'selected':''}>${t.plate}${t.driver?' — '+t.driver:''}${t.tare?' ('+parseFloat(t.tare).toLocaleString()+' lbs)':''}</option>`).join('');
+  sel.onchange=onTruckSel;
+}
+
+// ═══════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════
+function saveSettings(){
+  RATE_VAL=parseFloat(document.getElementById('s-rate').value);
+  localStorage.setItem('aiec_rate',RATE_VAL);
+  localStorage.setItem('aiec_adv',document.getElementById('s-adv').value);
+  document.getElementById('rate-il').textContent=RATE_VAL.toFixed(3);
+  toast('Saved','ok');renderDash();
+}
+async function adjBalance(){
+  const amt=parseFloat(document.getElementById('s-badj').value);const cid=document.getElementById('s-bcl').value;
+  if(isNaN(amt)){toast('Enter amount','err');return;}if(!cid){toast('Select client','err');return;}
+  const row={id:Date.now(),type:'adj',client_id:cid,date:td(),amount:amt,note:document.getElementById('s-brsn').value.trim()||'Manual adjustment'};
+  showLoad(true);
+  try{await sbInsert('transactions',row);TXS.unshift(row);toast('Balance set','ok');renderDash();}
+  catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+async function confirmReset(){
+  if(!confirm('Delete ALL data from Supabase? Cannot be undone.'))return;
+  showLoad(true);
+  try{
+    await Promise.all([
+      fetch(`${SB_URL}/rest/v1/transactions?id=gt.0`,{method:'DELETE',headers:H}),
+      fetch(`${SB_URL}/rest/v1/expenses?id=gt.0`,{method:'DELETE',headers:H}),
+      fetch(`${SB_URL}/rest/v1/invoices?id=neq.NONE`,{method:'DELETE',headers:H}),
+      fetch(`${SB_URL}/rest/v1/clients?id=neq.NONE`,{method:'DELETE',headers:H}),
+      fetch(`${SB_URL}/rest/v1/trucks?id=gt.0`,{method:'DELETE',headers:H}),
+    ]);
+    CLIENTS=[];TRUCKS=[];TXS=[];EXPS=[];INVS=[];ACI=null;
+    localStorage.removeItem('aiec_aci');
+    refreshDD();renderDash();renderClients();renderInvoices();renderExpenses();
+    toast('All data cleared');
+  }catch(e){toast('Error: '+e.message,'err');}
+  showLoad(false);
+}
+
+// ═══════════════════════════════════════
+//  DROPDOWNS
+// ═══════════════════════════════════════
+function refreshDD(){
+  const opts='<option value="">— Select client —</option>'+CLIENTS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  ['dash-client-sel','d-csel','pay-csel','s-bcl'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=opts;if(cur)el.value=cur;});
+  const icl=document.getElementById('inv-fcl');if(icl)icl.innerHTML='<option value="">All Clients</option>'+CLIENTS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const hcl=document.getElementById('hcf');if(hcl)hcl.innerHTML='<option value="">All Clients</option>'+CLIENTS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(ACI){const ds=document.getElementById('dash-client-sel');if(ds)ds.value=ACI;}
+}
+
+// MISC
+function dl(csv,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=name;a.click();}
+function exportTxCSV(){let csv='Date,Type,Client,Truck,Ticket,Gross,Tare,Net,Amount($),Method,Recipient,Note,Receipts\n';TXS.forEach(r=>{const cn=(CLIENTS.find(c=>c.id===r.client_id)||{name:''}).name;csv+=`${r.date},${r.type},"${cn}",${r.truck||''},${r.ticket||''},${r.gross||''},${r.tare||''},${r.net||''},${r.amount||''},${r.method||''},"${(r.recipient||'').replace(/"/g,"'")}","${(r.notes||r.note||'').replace(/"/g,"'")}",${(r.receipts||[]).length}\n`;});dl(csv,'aiec_tx_'+td()+'.csv');}
+function copyWeekSummary(){
+  if(!ACI){toast('Select client first','err');return;}
+  const{mon,sun}=CW();const dels=TXS.filter(t=>t.type==='delivery'&&t.client_id===ACI&&t.date>=mon&&t.date<=sun);
+  const lbs=dels.reduce((s,t)=>s+parseFloat(t.net||0),0);const amt=dels.reduce((s,t)=>s+parseFloat(t.amount||0),0);const c=GCB(ACI);
+  navigator.clipboard.writeText(`Week ${fd(mon)}–${fd(sun)} (${c?.name||''}): ${dels.length} deliveries · ${lbs.toLocaleString()} lbs net · $${amt.toFixed(2)}`).then(()=>toast('Copied!','ok'));
+}
+function setBtn(id,enabled){const el=document.getElementById(id);if(el)el.disabled=!enabled;}
+function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='show '+(type||'');clearTimeout(window._tt);window._tt=setTimeout(()=>el.className='',3200);}
+
+// DRAG & DROP
+function setupDrop(dropId,ctx){
+  const z=document.getElementById(dropId);if(!z)return;
+  z.addEventListener('dragover',e=>{e.preventDefault();z.style.borderColor='var(--green)';z.style.background='var(--green-pale)';});
+  z.addEventListener('dragleave',()=>{z.style.borderColor='';z.style.background='';});
+  z.addEventListener('drop',async e=>{e.preventDefault();z.style.borderColor='';z.style.background='';
+    for(const f of e.dataTransfer.files){const r=await f2b64(f);if(ctx==='d')pendD.push(r);else pendE.push(r);}renderPend(ctx);});
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('d-date').value=td();
+  document.getElementById('p-date').value=td();
+  document.getElementById('e-date').value=td();
+  document.getElementById('s-rate').value=RATE_VAL;
+  document.getElementById('s-adv').value=localStorage.getItem('aiec_adv')||4000;
+  document.getElementById('rate-il').textContent=RATE_VAL.toFixed(3);
+  setupDrop('d-drop','d');setupDrop('e-drop','e');
+  init();
+});
+</script>
+</body>
+</html>
