@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BinOps Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#0e0f11;--surface:#16181c;--surface2:#1e2126;--surface3:#252a31;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ede8;--text2:#9a9890;--text3:#5a5855;
+  --green:#22c98a;--green-dim:rgba(34,201,138,0.12);--green-text:#d6f7eb;
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.12);--amber-text:#fef3c7;
+  --red:#f04444;--red-dim:rgba(240,68,68,0.12);--red-text:#fee2e2;
+  --blue:#60a5fa;--blue-dim:rgba(96,165,250,0.12);--blue-text:#dbeafe;
+  --accent:#22c98a;--accent2:#1aab74;
+  --radius:10px;--radius-sm:6px;--radius-lg:14px;
+  --font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+.hidden{display:none!important}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(34,201,138,0.08) 0%,transparent 60%)}
+.login-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:44px 40px;width:400px;position:relative;z-index:1}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.login-logo-icon{width:38px;height:38px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.login-logo-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
+.login-logo-text{font-family:var(--font-head);font-size:22px;font-weight:700;letter-spacing:-0.5px}
+.login-logo-text span{color:var(--accent)}
+.login-title{font-family:var(--font-head);font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
+.login-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:var(--radius-sm);padding:3px;margin-bottom:24px}
+.login-tab{flex:1;text-align:center;padding:7px;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);transition:all 0.15s}
+.login-tab.active{background:var(--surface3);color:var(--text)}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px;display:block;letter-spacing:0.03em}
+.form-input{width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:var(--font-body);color:var(--text);outline:none;transition:border-color 0.15s}
+.form-input:focus{border-color:var(--accent)}
+.login-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;font-family:var(--font-head);cursor:pointer;margin-top:8px;letter-spacing:0.02em;transition:background 0.15s}
+.login-btn:hover{background:var(--accent2)}
+.login-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;display:none}
+.login-hint{font-size:11px;color:var(--text3);margin-top:16px;text-align:center;line-height:1.6}
+.login-hint strong{color:var(--text2)}
+
+/* APP SHELL */
+.app{display:flex;min-height:100vh}
+.sidebar{width:228px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:relative}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.sidebar-logo-row{display:flex;align-items:center;gap:10px}
+.sidebar-logo-icon{width:34px;height:34px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-logo-icon svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2}
+.sidebar-logo-title{font-family:var(--font-head);font-size:18px;font-weight:700;letter-spacing:-0.3px}
+.sidebar-logo-title span{color:var(--accent)}
+.sidebar-role{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:0.1em}
+.sidebar-nav{padding:14px 10px;flex:1}
+.nav-section{font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);padding:8px 10px 4px;margin-top:6px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;margin-bottom:1px;transition:all 0.12s}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--green-dim);color:var(--green)}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav-badge{margin-left:auto;font-size:10px;padding:1px 6px;border-radius:10px;background:var(--red-dim);color:var(--red)}
+.sidebar-bottom{padding:14px;border-top:1px solid var(--border)}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:var(--radius-sm);cursor:pointer;transition:background 0.12s}
+.sidebar-user:hover{background:var(--surface2)}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--green-dim);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:10px;color:var(--text3)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.topbar-title{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.topbar-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text);transition:all 0.12s;font-family:var(--font-body);white-space:nowrap}
+.btn:hover{background:var(--surface3);border-color:rgba(255,255,255,0.2)}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.btn-primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn-danger{background:var(--red-dim);color:var(--red);border-color:rgba(240,68,68,0.3)}
+.content{padding:24px 28px;flex:1}
+.page{display:none}.page.active{display:block}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.green::before{background:var(--green)}
+.kpi.amber::before{background:var(--amber)}
+.kpi.red::before{background:var(--red)}
+.kpi.blue::before{background:var(--blue)}
+.kpi-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;font-weight:500}
+.kpi-val{font-family:var(--font-mono);font-size:24px;font-weight:500;line-height:1}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:6px}
+.kpi-up{color:var(--green)}.kpi-dn{color:var(--red)}
+
+/* CHARTS */
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em}
+.chart-box{position:relative}
+
+/* TABLE */
+.tbl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.tbl-top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.tbl-title{font-size:14px;font-weight:600;font-family:var(--font-head)}
+.tbl-actions{display:flex;gap:8px;align-items:center}
+.search-box{padding:6px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font-body);color:var(--text);outline:none;width:200px}
+.search-box:focus{border-color:var(--accent)}
+.filter-box{padding:6px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font-body);color:var(--text);outline:none;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);font-weight:500;padding:9px 16px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+td{padding:9px 16px;font-size:12px;vertical-align:middle}
+.bin-id{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+.bin-name{font-weight:500;font-size:13px;color:var(--text)}
+.bin-addr{font-size:11px;color:var(--text3);margin-top:1px}
+.pill{display:inline-flex;align-items:center;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap}
+.p-green{background:var(--green-dim);color:var(--green)}
+.p-amber{background:var(--amber-dim);color:var(--amber)}
+.p-red{background:var(--red-dim);color:var(--red)}
+.p-blue{background:var(--blue-dim);color:var(--blue)}
+.bar-bg{height:4px;background:var(--surface3);border-radius:2px;width:70px;margin-top:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px}
+.mono{font-family:var(--font-mono);font-size:12px}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.paid-btn{font-size:10px;padding:3px 9px;border-radius:20px;border:none;cursor:pointer;font-weight:500;font-family:var(--font-body)}
+.paid-yes{background:var(--green-dim);color:var(--green)}
+.paid-no{background:var(--red-dim);color:var(--red)}
+.tbl-footer{font-size:11px;color:var(--text3);padding:8px 16px;background:var(--surface2);border-top:1px solid var(--border);display:flex;justify-content:space-between}
+
+/* PAYMENT PAGE */
+.pay-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+
+/* LOCATION FINDER */
+.loc-header{background:linear-gradient(135deg,rgba(34,201,138,0.08),rgba(96,165,250,0.06));border:1px solid rgba(34,201,138,0.2);border-radius:var(--radius-lg);padding:24px 28px;margin-bottom:20px}
+.loc-title{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:6px}
+.loc-sub{font-size:13px;color:var(--text2);margin-bottom:18px}
+.loc-detect-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--accent);color:#000;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:var(--font-head);cursor:pointer;transition:background 0.15s}
+.loc-detect-btn:hover{background:var(--accent2)}
+.loc-detect-btn svg{width:16px;height:16px;stroke:#000;fill:none;stroke-width:2}
+.loc-status{font-size:12px;color:var(--text2);margin-top:10px;min-height:18px}
+.suggestion-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.suggestion-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;position:relative;overflow:hidden}
+.suggestion-card.tier-a{border-left:3px solid var(--green)}
+.suggestion-card.tier-b{border-left:3px solid var(--amber)}
+.suggestion-card.tier-c{border-left:3px solid var(--red)}
+.sug-score{position:absolute;top:14px;right:16px;font-family:var(--font-mono);font-size:20px;font-weight:500}
+.sug-score.high{color:var(--green)}
+.sug-score.med{color:var(--amber)}
+.sug-type{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:4px;font-weight:600}
+.sug-name{font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:4px}
+.sug-addr{font-size:12px;color:var(--text2);margin-bottom:12px}
+.sug-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sug-stat{font-size:11px;color:var(--text3)}
+.sug-stat strong{color:var(--text2)}
+.sug-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sug-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.sug-rev{font-size:13px;font-weight:500;color:var(--green);margin-bottom:12px}
+.sug-btn{font-size:11px;padding:5px 12px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,201,138,0.3);border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-body);font-weight:500}
+
+/* CONTACTS PAGE */
+.contacts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.contact-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px}
+.contact-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.contact-avatar{width:40px;height:40px;border-radius:50%;background:var(--blue-dim);border:1px solid rgba(96,165,250,0.3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--blue);flex-shrink:0;font-family:var(--font-head)}
+.contact-name{font-size:14px;font-weight:600}
+.contact-co{font-size:11px;color:var(--text3)}
+.contact-detail{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);padding:3px 0}
+.contact-detail svg{width:13px;height:13px;stroke:var(--text3);fill:none;stroke-width:2;flex-shrink:0}
+.contact-bins{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:560px;max-height:88vh;overflow-y:auto}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
+.modal-title{font-family:var(--font-head);font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:22px;line-height:1;padding:2px 6px;border-radius:4px;transition:color 0.12s}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:22px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--border)}
+.fg{margin-bottom:14px}.fg label{font-size:11px;font-weight:500;color:var(--text2);display:block;margin-bottom:5px;letter-spacing:0.03em}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);color:var(--text);outline:none;transition:border-color 0.15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent)}
+.fg textarea{resize:vertical;min-height:60px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fgrid .fg{margin-bottom:0}
+.preview-box{background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:14px;min-height:32px}
+
+/* ALERTS */
+.alert-list{display:flex;flex-direction:column;gap:10px}
+.alert-card{display:flex;align-items:flex-start;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.alert-ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.alert-body{flex:1}
+.alert-ttl{font-size:13px;font-weight:600;margin-bottom:3px}
+.alert-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.alert-meta{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
+
+/* USER VIEW */
+.user-bin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:10px}
+.user-bin-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.user-bin-name{font-family:var(--font-head);font-size:15px;font-weight:700}
+.user-bin-id{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+.user-bin-addr{font-size:12px;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.user-bin-addr svg{width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2}
+.user-pm{background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px}
+.user-pm-title{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:6px;font-weight:600}
+.user-pm-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.user-pm-det{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;padding:1px 0}
+.user-pm-det svg{width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2}
+
+@media(max-width:900px){
+  .kpi-grid,.grid2,.suggestion-grid,.contacts-grid,.pay-summary{grid-template-columns:1fr 1fr}
+  .sidebar{width:56px}
+  .sidebar .nav-item span,.sidebar-logo-title,.sidebar-role,.sidebar-bottom .user-name,.sidebar-bottom .user-role,.nav-section{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-bg"></div>
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="login-logo-text">Bin<span>Ops</span> Pro</div>
+      </div>
+      <div class="login-title">Welcome back</div>
+      <div class="login-sub">Sign in to your operations dashboard</div>
+      <div class="login-tabs">
+        <div class="login-tab active" onclick="setLoginRole('admin')" id="tab-admin">Admin</div>
+        <div class="login-tab" onclick="setLoginRole('user')" id="tab-user">Field User</div>
+      </div>
+      <div class="fg"><label>Username</label><input class="form-input" type="text" id="login-user" placeholder="Enter username"></div>
+      <div class="fg"><label>Password</label><input class="form-input" type="password" id="login-pass" placeholder="Enter password"></div>
+      <button class="login-btn" onclick="doLogin()">Sign in →</button>
+      <div id="login-error" class="login-error">Invalid credentials. Please try again.</div>
+      <div class="login-hint">
+        Admin: <strong>admin / admin123</strong><br>
+        Field User: <strong>user / user123</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="hidden">
+  <div class="app">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-row">
+          <div class="sidebar-logo-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div>
+            <div class="sidebar-logo-title">Bin<span>Ops</span></div>
+            <div class="sidebar-role" id="sidebar-role">Admin</div>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-user" onclick="logout()">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <div>
+            <div class="user-name" id="user-name-display">Admin</div>
+            <div class="user-role">Sign out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="page-title">Dashboard</div>
+          <div class="topbar-sub" id="page-sub"></div>
+        </div>
+        <div class="topbar-actions" id="topbar-actions"></div>
+      </div>
+      <div class="content">
+
+        <!-- DASHBOARD PAGE -->
+        <div class="page" id="page-dashboard">
+          <div class="kpi-grid" id="kpi-grid"></div>
+          <div class="card" id="unprofitable-card" style="margin-bottom:20px"></div>
+          <div class="grid2">
+            <div class="card">
+              <div class="card-header"><div class="card-title">Weekly revenue — 8 weeks</div></div>
+              <div class="chart-box" style="height:190px"><canvas id="weeklyChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Portfolio health</div></div>
+              <div class="chart-box" style="height:145px"><canvas id="donutChart"></canvas></div>
+              <div style="display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:11px;color:var(--text2)">
+                <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--green);margin-right:5px;vertical-align:middle"></span>Keep</span>
+                <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--amber);margin-right:5px;vertical-align:middle"></span>Monitor</span>
+                <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--red);margin-right:5px;vertical-align:middle"></span>Remove</span>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">Revenue by tier — 6 months</div></div>
+            <div class="chart-box" style="height:210px"><canvas id="tierChart"></canvas></div>
+          </div>
+          <!-- Quick bins table on dashboard -->
+          <div class="tbl-card">
+            <div class="tbl-top">
+              <div class="tbl-title">Top performing bins</div>
+              <button class="btn" onclick="showPage('bins')">View all →</button>
+            </div>
+            <table><thead><tr><th>Bin</th><th>Fullness</th><th>Monthly rev</th><th>Net profit</th><th>Demographics</th><th>PM Contact</th><th>Paid</th><th>Status</th></tr></thead>
+            <tbody id="dashboard-bins-body"></tbody></table>
+          </div>
+        </div>
+
+        <!-- ALL BINS PAGE -->
+        <div class="page" id="page-bins">
+          <div class="tbl-card">
+            <div class="tbl-top">
+              <div class="tbl-title">All 54 bin locations</div>
+              <div class="tbl-actions">
+                <input class="search-box" type="text" id="bin-search" placeholder="Search..." oninput="renderBinsTable()">
+                <select class="filter-box" id="bin-fstatus" onchange="renderBinsTable()">
+                  <option value="">All status</option><option value="keep">Keep</option><option value="monitor">Monitor</option><option value="remove">Remove</option>
+                </select>
+                <select class="filter-box" id="bin-ftier" onchange="renderBinsTable()">
+                  <option value="">All tiers</option><option value="A">Tier A</option><option value="B">Tier B</option><option value="C">Tier C</option>
+                </select>
+                <button class="btn btn-primary" onclick="openAddBin()">+ Add bin</button>
+              </div>
+            </div>
+            <table><thead><tr><th>Bin / Location</th><th>Fullness</th><th>Lbs</th><th>Monthly rev</th><th>Net profit</th><th>Tier</th><th>Property manager</th><th>Demographics</th><th>Status</th><th>Paid</th><th></th></tr></thead>
+            <tbody id="all-bins-body"></tbody></table>
+            <div class="tbl-footer"><span id="bins-footer-left"></span><span>$0.45/lb · Max 55.12 lbs · $100/mo cost</span></div>
+          </div>
+        </div>
+
+        <!-- PAYMENTS PAGE -->
+        <div class="page" id="page-payments">
+          <div class="pay-summary" id="pay-summary"></div>
+          <div class="tbl-card">
+            <div class="tbl-top">
+              <div class="tbl-title">Monthly location payments — June 2026</div>
+              <div class="tbl-actions">
+                <select class="filter-box" id="pay-filter" onchange="renderPayments()">
+                  <option value="">All</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option>
+                </select>
+                <button class="btn btn-primary" onclick="markAllPaid()">Mark all paid</button>
+              </div>
+            </div>
+            <table><thead><tr><th>Bin</th><th>Location</th><th>Property manager</th><th>Company</th><th>Contact</th><th>Amount</th><th>Due date</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="pay-table-body"></tbody></table>
+            <div class="tbl-footer"><span id="pay-footer"></span><span>$100.00 per location per month</span></div>
+          </div>
+        </div>
+
+        <!-- LOCATION FINDER PAGE -->
+        <div class="page" id="page-location">
+          <div class="loc-header">
+            <div class="loc-title">AI Location Finder</div>
+            <div class="loc-sub">Detect your current location and get AI-powered bin placement suggestions based on neighborhood income, residential density, and foot traffic.</div>
+            <button class="loc-detect-btn" onclick="detectLocation()" id="detect-btn">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M12 7a5 5 0 100 10A5 5 0 0012 7z"/></svg>
+              Detect my location
+            </button>
+            <div class="loc-status" id="loc-status"></div>
+          </div>
+          <div id="suggestions-wrap" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-family:var(--font-head);font-size:16px;font-weight:700">Suggested locations near you</div>
+              <div style="font-size:12px;color:var(--text3)" id="loc-detected-area"></div>
+            </div>
+            <div class="suggestion-grid" id="suggestion-grid"></div>
+          </div>
+        </div>
+
+        <!-- CONTACTS PAGE -->
+        <div class="page" id="page-contacts">
+          <div class="tbl-actions" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+            <input class="search-box" type="text" id="contacts-search" placeholder="Search managers..." oninput="renderContacts()" style="width:240px">
+            <span style="font-size:12px;color:var(--text3)" id="contacts-count"></span>
+          </div>
+          <div class="contacts-grid" id="contacts-grid"></div>
+        </div>
+
+        <!-- ALERTS PAGE -->
+        <div class="page" id="page-alerts">
+          <div class="alert-list" id="alert-list"></div>
+        </div>
+
+        <!-- USER: BIN LIST PAGE -->
+        <div class="page" id="page-user-bins">
+          <div style="margin-bottom:16px;display:flex;gap:10px">
+            <input class="search-box" type="text" id="user-search" placeholder="Search bins..." oninput="renderUserBins()" style="width:240px">
+            <select class="filter-box" id="user-ftier" onchange="renderUserBins()">
+              <option value="">All tiers</option><option value="A">Tier A</option><option value="B">Tier B</option><option value="C">Tier C</option>
+            </select>
+          </div>
+          <div id="user-bins-list"></div>
+        </div>
+
+        <!-- USER: LOCATION FINDER -->
+        <div class="page" id="page-user-location">
+          <div class="loc-header">
+            <div class="loc-title">Find a bin location near you</div>
+            <div class="loc-sub">Detect your current location and see suggested spots for new donation bins.</div>
+            <button class="loc-detect-btn" onclick="detectLocation('user')" id="detect-btn-user">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+              Detect my location
+            </button>
+            <div class="loc-status" id="loc-status-user"></div>
+          </div>
+          <div id="suggestions-wrap-user" style="display:none">
+            <div style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:14px">Nearby suggestions</div>
+            <div class="suggestion-grid" id="suggestion-grid-user"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT BIN MODAL -->
+<div class="modal-overlay" id="modal-bin">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title" id="modal-bin-title">Add new bin</div><button class="modal-close" onclick="closeModal('bin')">×</button></div>
+    <div class="modal-body">
+      <div class="fgrid" style="margin-bottom:12px">
+        <div class="fg"><label>Bin ID</label><input type="text" id="f-id" placeholder="B-055"></div>
+        <div class="fg"><label>Location name</label><input type="text" id="f-name" placeholder="Sunset Apartments"></div>
+      </div>
+      <div class="fg"><label>Address</label><input type="text" id="f-addr" placeholder="Full street address"></div>
+      <div class="fgrid" style="margin-bottom:12px">
+        <div class="fg"><label>Date placed</label><input type="date" id="f-placed"></div>
+        <div class="fg"><label>Fullness %</label><input type="number" id="f-full" min="0" max="100" placeholder="0–100" oninput="updateFPreview()"></div>
+      </div>
+      <div class="fgrid" style="margin-bottom:12px">
+        <div class="fg"><label>Tier</label><select id="f-tier"><option value="A">Tier A — income >$80k</option><option value="B">Tier B — $45k–$80k</option><option value="C">Tier C — &lt;$45k</option></select></div>
+        <div class="fg"><label>Median income</label><input type="text" id="f-income" placeholder="$85,000"></div>
+      </div>
+      <div class="fg"><label>Monthly collections</label><input type="number" id="f-collections" placeholder="5"></div>
+      <div class="preview-box" id="f-preview">Enter fullness % to see estimate</div>
+      <div style="background:rgba(34,201,138,0.06);border:1px solid rgba(34,201,138,0.15);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Property Manager</div>
+        <div class="fgrid" style="margin-bottom:10px">
+          <div class="fg"><label>Manager name</label><input type="text" id="f-pm" placeholder="Full name"></div>
+          <div class="fg"><label>Company</label><input type="text" id="f-co" placeholder="Company name"></div>
+        </div>
+        <div class="fgrid" style="margin-bottom:10px">
+          <div class="fg"><label>Phone</label><input type="text" id="f-ph" placeholder="(305) 555-0000"></div>
+          <div class="fg"><label>Email</label><input type="email" id="f-email" placeholder="manager@company.com"></div>
+        </div>
+        <div class="fg"><label>Contract notes</label><textarea id="f-notes" placeholder="e.g. Month-to-month, renewed Jan 2025..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('bin')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBin()">Save bin</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const RATE=0.45,MAX=795.38,COST=100;
+const DATE_FROM='2026-06-13',DATE_TO='2026-06-20';
+const USERS={admin:{pass:'admin123',role:'admin'},user:{pass:'user123',role:'user'}};
+let currentRole='admin';
+let editingId=null;
+
+const defaultBins=[
+  {id:"B-001",name:"Bin 2031516",addr:"State Road 7, 33428, Boca Raton, United States",placed:"2026-06-19",full:98,tier:"B",income:"$12.90",col:1,pm:"Not on file",co:"Propel Investments limited",ph:"Not on file",email:"Not on file",notes:"Container ID a19958a0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:28.66,rangeRev:12.9},
+  {id:"B-002",name:"Bin 2031517",addr:"Crystal Lake Drive, 33064, Pompano Beach, United States",placed:"2026-06-17",full:96,tier:"A",income:"$22.82",col:2,pm:"Not on file",co:"Propel Investments limited",ph:"Not on file",email:"Not on file",notes:"Container ID 67d21570 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:50.71,rangeRev:22.82},
+  {id:"B-003",name:"Bin 2025949",addr:"South Military Trail, 33442, Deerfield Beach, United States",placed:"2026-06-19",full:78,tier:"A",income:"$19.84",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 9785f630 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:44.09,rangeRev:19.84},
+  {id:"B-004",name:"Bin 2025942",addr:"South Military Trail 1117, 33442, Deerfield Beach, United States",placed:"2026-06-19",full:76,tier:"A",income:"$20.83",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID d873b080 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:46.3,rangeRev:20.83},
+  {id:"B-005",name:"Bin 2031534",addr:"Jog Road 15140, 33446, Delray Beach, United States",placed:"2026-06-20",full:74,tier:"A",income:"$19.84",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 14dd5940 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:44.09,rangeRev:19.84},
+  {id:"B-006",name:"Bin 2025950",addr:"West Hillsboro Boulevard 1867, 33442, Deerfield Beach, United States",placed:"2026-06-13",full:73,tier:"B",income:"$9.92",col:1,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 06ffd2d0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:22.05,rangeRev:9.92},
+  {id:"B-007",name:"Bin 2031523",addr:"West Hillsboro Boulevard 1867, 33442, Deerfield Beach, United States",placed:"2026-06-20",full:72,tier:"A",income:"$25.79",col:3,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID d5c37960 \u00b7 3 pickups in range",paid:false,log:[],rangeLb:57.32,rangeRev:25.79},
+  {id:"B-008",name:"Bin 2025934",addr:"Jog Road, 33446, Delray Beach, United States",placed:"2026-06-20",full:72,tier:"B",income:"$9.92",col:1,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 07b430b0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:22.05,rangeRev:9.92},
+  {id:"B-009",name:"Bin 2025944",addr:"Southwest 12th Avenue 1400, 33069, Pompano Beach, United States",placed:"2026-06-19",full:72,tier:"B",income:"$9.92",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID e37e70d0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:22.05,rangeRev:9.92},
+  {id:"B-010",name:"Bin 2025946",addr:"State Road 7, 33428, Boca Raton, United States",placed:"2026-06-20",full:71,tier:"A",income:"$24.80",col:3,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 2c2c3d80 \u00b7 3 pickups in range",paid:false,log:[],rangeLb:55.12,rangeRev:24.8},
+  {id:"B-011",name:"Bin 2025936",addr:"Jog Road, 33446, Delray Beach, United States",placed:"2026-06-20",full:70,tier:"B",income:"$14.88",col:2,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 5f8b2770 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:33.07,rangeRev:14.88},
+  {id:"B-012",name:"Bin 2031439",addr:"State Road 7, 33428, Boca Raton, United States",placed:"2026-06-20",full:70,tier:"A",income:"$29.76",col:3,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 48459e10 \u00b7 3 pickups in range",paid:false,log:[],rangeLb:66.14,rangeRev:29.76},
+  {id:"B-013",name:"Bin 2025943",addr:"Spanish River Boulevard 336, 33431, Boca Raton, United States",placed:"2026-06-20",full:69,tier:"C",income:"$8.93",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 83b9e7f0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:19.84,rangeRev:8.93},
+  {id:"B-014",name:"Bin 2031515",addr:"Jim Moran Boulevard 120, 33442, Deerfield Beach, United States",placed:"2026-06-13",full:68,tier:"C",income:"$8.93",col:1,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 25084cc0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:19.84,rangeRev:8.93},
+  {id:"B-015",name:"Bin 2031442",addr:"West Hillsboro Boulevard, 33442, Deerfield Beach, United States",placed:"2026-06-16",full:67,tier:"A",income:"$21.83",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 97f06fb0 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:48.5,rangeRev:21.83},
+  {id:"B-016",name:"Bin 2031538",addr:"Northeast 42nd Street, 33431, Boca Raton, United States",placed:"2026-06-17",full:65,tier:"C",income:"$8.93",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 53669ca0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:19.84,rangeRev:8.93},
+  {id:"B-017",name:"Bin 2025937",addr:"West Hillsboro Boulevard, 33442, Deerfield Beach, United States",placed:"2026-06-20",full:64,tier:"B",income:"$15.87",col:2,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 05b70de0 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:35.27,rangeRev:15.87},
+  {id:"B-018",name:"Bin 2031542",addr:"South Tivoli Park Boulevard 900, 33441, Deerfield Beach, United States",placed:"2026-06-20",full:64,tier:"B",income:"$15.87",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 3bda1cd0 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:35.27,rangeRev:15.87},
+  {id:"B-019",name:"Bin 2031529",addr:"Florida 7 21852, 33428, Boca Raton, United States",placed:"2026-06-14",full:64,tier:"B",income:"$16.87",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 2a3ca610 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:37.48,rangeRev:16.87},
+  {id:"B-020",name:"Bin 2031537",addr:"West Hillsboro Boulevard, 33442, Deerfield Beach, United States",placed:"2026-06-20",full:62,tier:"A",income:"$22.82",col:3,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 24443130 \u00b7 3 pickups in range",paid:false,log:[],rangeLb:50.71,rangeRev:22.82},
+  {id:"B-021",name:"Bin 2031445",addr:"Country Club Boulevard, 33442, Deerfield Beach, United States",placed:"2026-06-20",full:61,tier:"C",income:"$7.94",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID b23114b0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:17.64,rangeRev:7.94},
+  {id:"B-022",name:"Bin 2031531",addr:"Lariat Circle 89, 33487, Boca Raton, United States",placed:"2026-06-17",full:60,tier:"C",income:"$7.94",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID c02f7410 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:17.64,rangeRev:7.94},
+  {id:"B-023",name:"Bin 2031535",addr:"South Military Trail 1117, 33442, Deerfield Beach, United States",placed:"2026-06-19",full:60,tier:"A",income:"$25.79",col:3,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 370f4550 \u00b7 3 pickups in range",paid:false,log:[],rangeLb:57.32,rangeRev:25.79},
+  {id:"B-024",name:"Bin 2025935",addr:"North Federal Highway 2210, 33431, Boca Raton, United States",placed:"2026-06-20",full:53,tier:"C",income:"$6.94",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 5b890f60 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:15.43,rangeRev:6.94},
+  {id:"B-025",name:"Bin 2031446",addr:"North Dixie Highway 1890, 33432, Boca Raton, United States",placed:"2026-06-20",full:47,tier:"B",income:"$11.90",col:2,pm:"Not on file",co:"Propel Investments limited",ph:"Not on file",email:"Not on file",notes:"Container ID 8cd1e5f0 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:26.46,rangeRev:11.9},
+  {id:"B-026",name:"Bin 2031450",addr:"Northeast 10th Terrace 3450, 33064, Pompano Beach, United States",placed:"2026-06-19",full:47,tier:"C",income:"$5.95",col:1,pm:"Not on file",co:"Propel Investments limited",ph:"Not on file",email:"Not on file",notes:"Container ID ca35e350 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:13.23,rangeRev:5.95},
+  {id:"B-027",name:"Bin 2031526",addr:"Northwest 5th Avenue 3480, 33431, Boca Raton, United States",placed:"2026-06-20",full:46,tier:"B",income:"$15.87",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID d1c67840 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:35.27,rangeRev:15.87},
+  {id:"B-028",name:"Bin 2031447",addr:"Glades Road, 33434, Boca Raton, United States",placed:"2026-06-20",full:45,tier:"A",income:"$18.85",col:3,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID ac5f4b30 \u00b7 3 pickups in range",paid:false,log:[],rangeLb:41.89,rangeRev:18.85},
+  {id:"B-029",name:"Bin 2031438",addr:"Spring Circle 977, 33441, Deerfield Beach, United States",placed:"2026-06-20",full:44,tier:"B",income:"$13.89",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 982a99e0 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:30.86,rangeRev:13.89},
+  {id:"B-030",name:"Bin 2025939",addr:"State Road 7, 33428, Boca Raton, United States",placed:"2026-06-20",full:40,tier:"A",income:"$19.84",col:3,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 7a622490 \u00b7 3 pickups in range",paid:false,log:[],rangeLb:44.09,rangeRev:19.84},
+  {id:"B-031",name:"Bin 2025953",addr:"Federal highway 7000, 33487, Boca Raton, United States",placed:"2026-06-13",full:40,tier:"C",income:"$4.96",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 38607e60 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:11.02,rangeRev:4.96},
+  {id:"B-032",name:"Bin 2025940",addr:"Northeast 10th Terrace 3450, 33064, Pompano Beach, United States",placed:"2026-06-19",full:39,tier:"B",income:"$10.91",col:2,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID e8533b60 \u00b7 2 pickups in range",paid:false,log:[],rangeLb:24.25,rangeRev:10.91},
+  {id:"B-033",name:"Bin 2031536",addr:"North Federal Highway 4000, 33431, Boca Raton, United States",placed:"2026-06-17",full:39,tier:"C",income:"$4.96",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 92185de0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:11.02,rangeRev:4.96},
+  {id:"B-034",name:"Bin 2025951",addr:"Jog Road 10560, 33446, Delray Beach, United States",placed:"2026-06-17",full:38,tier:"C",income:"$4.96",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID a349cea0 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:11.02,rangeRev:4.96},
+  {id:"B-035",name:"Bin 2031518",addr:"Hillsboro Technology Drive, 33441, Deerfield Beach, United States",placed:"2026-06-20",full:37,tier:"C",income:"$4.96",col:1,pm:"Not on file",co:"CL Investments Limited",ph:"Not on file",email:"Not on file",notes:"Container ID 05862b80 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:11.02,rangeRev:4.96},
+  {id:"B-036",name:"Bin 2031527",addr:"Northwest 15th Street, 33069, Pompano Beach, United States",placed:"2026-06-16",full:34,tier:"C",income:"$4.96",col:1,pm:"Not on file",co:"Changing lives",ph:"Not on file",email:"Not on file",notes:"Container ID 62cd2980 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:11.02,rangeRev:4.96},
+  {id:"B-037",name:"Bin 2031520",addr:"Northwest 4th Diagonal, 33432, Boca Raton, United States",placed:"2026-06-20",full:31,tier:"C",income:"$3.97",col:1,pm:"Not on file",co:"Propel Investments limited",ph:"Not on file",email:"Not on file",notes:"Container ID 6f44cf90 \u00b7 1 pickups in range",paid:false,log:[],rangeLb:8.82,rangeRev:3.97},
+];
+
+let bins=JSON.parse(localStorage.getItem('binops_bins')||'null')||defaultBins;
+function save(){localStorage.setItem('binops_bins',JSON.stringify(bins));}
+
+function calc(b){
+  const lbs=+(b.full/100*MAX).toFixed(2);
+  const revNow=+(lbs*RATE).toFixed(2);
+  const mLbs=+(b.col*(b.full/100)*MAX).toFixed(1);
+  const mRev=+(mLbs*RATE).toFixed(2);
+  const net=+(mRev-COST).toFixed(2);
+  let verdict='keep';
+  if(net<0) verdict='remove';
+  else if(net<50) verdict='monitor';
+  return{lbs,revNow,mLbs,mRev,net,verdict};
+}
+const WEEKLY_COST=+(COST/4.33).toFixed(2);
+function rangeProfit(b){
+  const rev=+(b.rangeRev||0).toFixed(2);
+  const lb=+(b.rangeLb||0).toFixed(2);
+  const profit=+(rev-WEEKLY_COST).toFixed(2);
+  const profitable=profit>=0;
+  let reason='';
+  if(!profitable){
+    if(b.col<=1) reason='Only '+b.col+' pickup'+(b.col===1?'':'s')+' logged — low traffic or placement issue';
+    else if(lb<20) reason='Low weight per pickup — bin may be underused at this location';
+    else reason='Revenue from '+lb+' lbs doesn’t cover the ~$'+WEEKLY_COST+'/wk location cost';
+  }
+  return{rev,lb,profit,profitable,reason};
+}
+
+function bc(p){return p>=75?'var(--green)':p>=40?'var(--amber)':'var(--red)';}
+function pc(v){return v==='keep'?'p-green':v==='monitor'?'p-amber':'p-red';}
+function tc(t){return t==='A'?'p-green':t==='B'?'p-amber':'p-red';}
+function fm(n){return'$'+Math.abs(n).toFixed(2);}
+function fmi(n){return'$'+Math.round(Math.abs(n)).toLocaleString();}
+function fmi2(n){return Math.round(Math.abs(n)).toLocaleString();}
+function initials(s){if(!s||s==='Not on file')return'?';return s.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+
+let loginRole='admin';
+function setLoginRole(r){
+  loginRole=r;
+  document.getElementById('tab-admin').classList.toggle('active',r==='admin');
+  document.getElementById('tab-user').classList.toggle('active',r==='user');
+}
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value.trim();
+  const err=document.getElementById('login-error');
+  const match=USERS[u];
+  if(match&&match.pass===p&&match.role===loginRole){
+    err.style.display='none';
+    currentRole=loginRole;
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app-screen').classList.remove('hidden');
+    initApp();
+  } else {
+    err.style.display='block';
+  }
+}
+document.getElementById('login-pass').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('login-user').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+
+function logout(){
+  document.getElementById('app-screen').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+}
+
+function initApp(){
+  const isAdmin=currentRole==='admin';
+  document.getElementById('sidebar-role').textContent=isAdmin?'Administrator':'Field User';
+  document.getElementById('user-avatar').textContent=isAdmin?'A':'U';
+  document.getElementById('user-name-display').textContent=isAdmin?'Admin':'Field User';
+
+  const adminNav=[
+    {id:'dashboard',icon:'<path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/>',label:'Dashboard'},
+    {id:'bins',icon:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',label:'All bins'},
+    {id:'payments',icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',label:'Payments'},
+    {id:'location',icon:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',label:'Location finder'},
+    {id:'contacts',icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',label:'Managers'},
+    {id:'alerts',icon:'<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',label:'Alerts'},
+  ];
+  const userNav=[
+    {id:'user-bins',icon:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',label:'Bin locations'},
+    {id:'user-location',icon:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',label:'Find location'},
+  ];
+  const navItems=isAdmin?adminNav:userNav;
+  const alertCount=bins.filter(b=>calc(b).verdict==='remove').length;
+  document.getElementById('sidebar-nav').innerHTML=navItems.map(n=>`
+    <div class="nav-item" id="nav-${n.id}" onclick="showPage('${n.id}')">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8">${n.icon}</svg>
+      <span>${n.label}</span>
+      ${n.id==='alerts'?`<span class="nav-badge">${alertCount}</span>`:''}
+    </div>`).join('');
+
+  const firstPage=isAdmin?'dashboard':'user-bins';
+  showPage(firstPage);
+  if(isAdmin) setTimeout(initCharts,100);
+}
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const p=document.getElementById('page-'+name);
+  if(p) p.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const ni=document.getElementById('nav-'+name);
+  if(ni) ni.classList.add('active');
+  const titles={dashboard:'Dashboard',bins:'All bins',payments:'Monthly payments',location:'Location finder',contacts:'Property managers',alerts:'Alerts','user-bins':'Bin locations','user-location':'Find a location'};
+  const subs={dashboard:bins.length+' active bins · Pickup data '+DATE_FROM+' – '+DATE_TO,bins:'Full bin performance overview',payments:'Track monthly $100 location payments',location:'AI-powered bin placement suggestions',contacts:'All property manager contacts',alerts:'Items needing attention','user-bins':'View bin locations and property managers','user-location':'Detect nearby placement opportunities'};
+  document.getElementById('page-title').textContent=titles[name]||name;
+  document.getElementById('page-sub').textContent=subs[name]||'';
+  const actions={bins:'<button class="btn btn-primary" onclick="openAddBin()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add bin</button>',payments:'<button class="btn btn-primary" onclick="markAllPaid()">Mark all paid</button>'};
+  document.getElementById('topbar-actions').innerHTML=actions[name]||'';
+  if(name==='dashboard') renderDashboard();
+  if(name==='bins') renderBinsTable();
+  if(name==='payments') renderPayments();
+  if(name==='contacts') renderContacts();
+  if(name==='alerts') renderAlerts();
+  if(name==='user-bins') renderUserBins();
+}
+
+function renderDashboard(){
+  const liveLbs=bins.reduce((s,b)=>s+calc(b).lbs,0);
+  const rangeLbs=bins.reduce((s,b)=>s+(b.rangeLb||0),0);
+  const rangeRev=bins.reduce((s,b)=>s+(b.rangeRev||0),0);
+  const avgFull=bins.length?bins.reduce((s,b)=>s+b.full,0)/bins.length:0;
+  document.getElementById('kpi-grid').innerHTML=[
+    {cls:'blue',label:'Live quantity in bins',val:fmi2(liveLbs)+' lbs',sub:'across '+bins.length+' bins · '+avgFull.toFixed(0)+'% avg full',s:''},
+    {cls:'green',label:'Gross revenue ('+DATE_FROM+' – '+DATE_TO+')',val:fm(rangeRev),sub:rangeLbs.toFixed(0)+' lbs collected this range',s:'kpi-up'},
+    {cls:'amber',label:'Pickups in range',val:bins.reduce((s,b)=>s+(b.col||0),0),sub:'collection events logged',s:''},
+    {cls:'green',label:'Avg revenue / pickup',val:fm(rangeRev/Math.max(1,bins.reduce((s,b)=>s+(b.col||0),0))),sub:'$0.45/lb · pressureless rate',s:'kpi-up'},
+  ].map(k=>`<div class="kpi ${k.cls}"><div class="kpi-label">${k.label}</div><div class="kpi-val">${k.val}</div><div class="kpi-sub ${k.s}">${k.sub}</div></div>`).join('');
+
+  const unprofitable=bins.map(b=>({b,p:rangeProfit(b)})).filter(x=>!x.p.profitable).sort((a,c)=>a.p.profit-c.p.profit);
+  const totalLoss=unprofitable.reduce((s,x)=>s+x.p.profit,0);
+  document.getElementById('unprofitable-card').innerHTML=`
+    <div class="card-header">
+      <div class="card-title">Not profitable this range · ${unprofitable.length} of ${bins.length} bins</div>
+      <div style="font-size:12px;color:var(--text3)">Cost basis: ~$${WEEKLY_COST}/bin/wk (prorated from $${COST}/mo)</div>
+    </div>
+    ${unprofitable.length===0?`<div style="font-size:13px;color:var(--text2);padding:8px 0">All bins covered their location cost this range. Nice.</div>`:`
+    <table style="width:100%;font-size:12.5px;border-collapse:collapse">
+      <thead><tr style="color:var(--text3);text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em">
+        <th style="padding:6px 8px 8px 0">Bin</th><th style="padding:6px 8px">Location</th><th style="padding:6px 8px">Pickups</th><th style="padding:6px 8px">Lbs collected</th><th style="padding:6px 8px">Revenue</th><th style="padding:6px 8px">Shortfall</th><th style="padding:6px 8px">Suggestion</th>
+      </tr></thead>
+      <tbody>
+      ${unprofitable.map(x=>`<tr style="border-top:1px solid var(--border)">
+        <td style="padding:7px 8px 7px 0"><div class="bin-id">${x.b.id}</div><div class="bin-name">${x.b.name}</div></td>
+        <td style="padding:7px 8px;color:var(--text2)">${x.b.addr}</td>
+        <td style="padding:7px 8px" class="mono">${x.b.col}</td>
+        <td style="padding:7px 8px" class="mono">${x.p.lb} lbs</td>
+        <td style="padding:7px 8px" class="mono">${fm(x.p.rev)}</td>
+        <td style="padding:7px 8px" class="mono neg">-${fm(Math.abs(x.p.profit))}</td>
+        <td style="padding:7px 8px;color:var(--text3);font-size:11.5px;max-width:220px">${x.p.reason}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:10px;font-size:11.5px;color:var(--text3)">Combined shortfall: <span class="neg" style="font-weight:600">-${fm(Math.abs(totalLoss))}</span> this range. Bins with 0-1 pickups or under ~15 lbs/visit are the weakest signal — consider relocating, consolidating with a nearby stronger bin, or pausing the location.</div>
+    `}
+  `;
+
+  const top8=[...bins].sort((a,b)=>calc(b).mRev-calc(a).mRev).slice(0,8);
+  document.getElementById('dashboard-bins-body').innerHTML=top8.map(b=>{
+    const c=calc(b);
+    return`<tr>
+      <td><div class="bin-id">${b.id}</div><div class="bin-name">${b.name}</div><div class="bin-addr">${b.addr}</div></td>
+      <td><div>${b.full}%</div><div class="bar-bg"><div class="bar-fill" style="width:${b.full}%;background:${bc(b.full)}"></div></div></td>
+      <td class="mono">${fm(c.mRev)}</td>
+      <td class="mono ${c.net>=0?'pos':'neg'}">${c.net>=0?'+':'-'}${fm(c.net)}</td>
+      <td style="font-size:11px;color:var(--text3)"><div style="color:var(--green);font-size:11px;font-weight:500">${b.income}</div><div>Age ${getDemo(b.id).medAge} · ${getDemo(b.id).sexSplit}</div><div>Couples ${getDemo(b.id).couples} · Kids ${getDemo(b.id).kids}</div></td>
+      <td style="font-size:12px"><div style="font-weight:500">${b.pm}</div><div style="font-size:10px;color:var(--text3)">${b.co}</div></td>
+      <td><button class="paid-btn ${b.paid?'paid-yes':'paid-no'}" onclick="togglePaid('${b.id}',event)">${b.paid?'Paid':'Unpaid'}</button></td>
+      <td><span class="pill ${pc(c.verdict)}">${c.verdict}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+let chartsInit=false;
+function initCharts(){
+  if(chartsInit) return; chartsInit=true;
+  const gridColor='rgba(255,255,255,0.05)';
+  const tickColor='rgba(255,255,255,0.3)';
+  new Chart(document.getElementById('weeklyChart'),{type:'line',data:{labels:['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7','Wk8'],datasets:[{label:'Revenue',data:[4812,4950,5100,4876,5240,5380,5490,5625],borderColor:'#22c98a',backgroundColor:'rgba(34,201,138,0.07)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#22c98a',fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11},callback:v=>'$'+v.toLocaleString()}}}}});
+  const k=bins.filter(b=>calc(b).verdict==='keep').length;
+  const m=bins.filter(b=>calc(b).verdict==='monitor').length;
+  const r=bins.filter(b=>calc(b).verdict==='remove').length;
+  new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:['Keep','Monitor','Remove'],datasets:[{data:[k,m,r],backgroundColor:['#22c98a','#f59e0b','#f04444'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false}}}});
+  new Chart(document.getElementById('tierChart'),{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Tier A',data:[10200,11400,12100,13200,14500,15800],backgroundColor:'#22c98a',borderRadius:3},{label:'Tier B',data:[5400,5800,6100,6400,6900,7200],backgroundColor:'#f59e0b',borderRadius:3},{label:'Tier C',data:[1100,980,870,760,680,520],backgroundColor:'#f04444',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{color:gridColor},ticks:{color:tickColor,font:{size:11}}},y:{stacked:true,grid:{color:gridColor},ticks:{color:tickColor,font:{size:11},callback:v=>'$'+v.toLocaleString()}}}}});
+}
+
+function renderBinsTable(){
+  const s=(document.getElementById('bin-search').value||'').toLowerCase();
+  const fs=document.getElementById('bin-fstatus').value;
+  const ft=document.getElementById('bin-ftier').value;
+  let data=bins.filter(b=>{
+    const c=calc(b);
+    if(fs&&c.verdict!==fs) return false;
+    if(ft&&b.tier!==ft) return false;
+    if(s&&!b.name.toLowerCase().includes(s)&&!b.addr.toLowerCase().includes(s)&&!b.id.toLowerCase().includes(s)) return false;
+    return true;
+  });
+  document.getElementById('bins-footer-left').textContent=data.length+' bins shown · Total monthly net: '+fmi(data.reduce((s,b)=>s+calc(b).net,0));
+  document.getElementById('all-bins-body').innerHTML=data.map(b=>{
+    const c=calc(b);
+    return`<tr>
+      <td><div class="bin-id">${b.id}</div><div class="bin-name">${b.name}</div><div class="bin-addr">${b.addr}</div></td>
+      <td><div>${b.full}%</div><div class="bar-bg"><div class="bar-fill" style="width:${b.full}%;background:${bc(b.full)}"></div></div></td>
+      <td class="mono">${c.lbs}</td>
+      <td class="mono">${fm(c.mRev)}</td>
+      <td class="mono ${c.net>=0?'pos':'neg'}">${c.net>=0?'+':'-'}${fm(c.net)}</td>
+      <td><span class="pill ${tc(b.tier)}">${b.tier}</span></td>
+      <td style="font-size:12px"><div style="font-weight:500;color:var(--text)">${b.pm}</div><div style="font-size:10px;color:var(--text3)">${b.co}</div><div style="font-size:10px;color:var(--text3)">${b.ph}</div></td>
+      <td style="font-size:12px;min-width:180px">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="color:var(--green);font-weight:500">${b.income}</span>
+          <span style="color:var(--text3);font-size:11px">Age ${getDemo(b.id).medAge} · ${getDemo(b.id).sexSplit}</span>
+          <span style="color:var(--text3);font-size:11px">Couples ${getDemo(b.id).couples} · Kids ${getDemo(b.id).kids}</span>
+        </div>
+      </td>
+      <td><span class="pill ${pc(c.verdict)}">${c.verdict}</span></td>
+      <td><button class="paid-btn ${b.paid?'paid-yes':'paid-no'}" onclick="togglePaid('${b.id}',event)">${b.paid?'✓ Paid':'✗ Unpaid'}</button></td>
+      <td><button class="btn" style="padding:4px 10px;font-size:11px" onclick="openEditBin('${b.id}')">Edit</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPayments(){
+  const paidCount=bins.filter(b=>b.paid).length;
+  const unpaidCount=bins.filter(b=>!b.paid).length;
+  const paidTotal=paidCount*100;
+  const unpaidTotal=unpaidCount*100;
+  document.getElementById('pay-summary').innerHTML=[
+    {cls:'green',label:'Paid',val:paidCount+' bins',sub:fmi(paidTotal)+' collected'},
+    {cls:'red',label:'Unpaid',val:unpaidCount+' bins',sub:fmi(unpaidTotal)+' outstanding'},
+    {cls:'amber',label:'Total due',val:fmi(bins.length*100),sub:'this month'},
+    {cls:'blue',label:'Coverage',val:Math.round(paidCount/bins.length*100)+'%',sub:'payment rate'},
+  ].map(k=>`<div class="kpi ${k.cls}"><div class="kpi-label">${k.label}</div><div class="kpi-val">${k.val}</div><div class="kpi-sub">${k.sub}</div></div>`).join('');
+  const filter=document.getElementById('pay-filter').value;
+  let data=bins.filter(b=>filter===''||(filter==='paid'&&b.paid)||(filter==='unpaid'&&!b.paid));
+  document.getElementById('pay-footer').textContent=data.length+' entries · Outstanding: '+fmi(data.filter(b=>!b.paid).length*100);
+  document.getElementById('pay-table-body').innerHTML=data.map(b=>`<tr>
+    <td class="mono" style="font-size:10px">${b.id}</td>
+    <td><div class="bin-name">${b.name}</div><div class="bin-addr">${b.addr}</div></td>
+    <td style="font-size:12px;font-weight:500">${b.pm}</td>
+    <td style="font-size:12px;color:var(--text2)">${b.co}</td>
+    <td style="font-size:11px;color:var(--text3)">${b.ph}</td>
+    <td class="mono" style="font-weight:500">$100.00</td>
+    <td style="font-size:12px;color:var(--text3)">Jun 1, 2026</td>
+    <td><span class="pill ${b.paid?'p-green':'p-red'}">${b.paid?'Paid':'Unpaid'}</span></td>
+    <td><button class="paid-btn ${b.paid?'paid-yes':'paid-no'}" onclick="togglePaid('${b.id}',event)">${b.paid?'Mark unpaid':'Mark paid'}</button></td>
+  </tr>`).join('');
+}
+
+function togglePaid(id,e){
+  e.stopPropagation();
+  const b=bins.find(x=>x.id===id);
+  if(b){b.paid=!b.paid;save();}
+  const active=document.querySelector('.page.active');
+  if(active){
+    if(active.id==='page-dashboard') renderDashboard();
+    if(active.id==='page-bins') renderBinsTable();
+    if(active.id==='page-payments') renderPayments();
+  }
+}
+function markAllPaid(){bins.forEach(b=>b.paid=true);save();renderPayments();}
+
+function renderContacts(){
+  const s=(document.getElementById('contacts-search').value||'').toLowerCase();
+  const withPM=bins.filter(b=>b.pm&&b.pm!=='Not on file');
+  const pmMap={};
+  withPM.forEach(b=>{
+    if(!pmMap[b.pm]) pmMap[b.pm]={pm:b.pm,co:b.co,ph:b.ph,email:b.email,bins:[]};
+    pmMap[b.pm].bins.push({id:b.id,name:b.name});
+  });
+  let list=Object.values(pmMap);
+  if(s) list=list.filter(p=>p.pm.toLowerCase().includes(s)||p.co.toLowerCase().includes(s));
+  document.getElementById('contacts-count').textContent=list.length+' managers';
+  document.getElementById('contacts-grid').innerHTML=list.map(p=>`
+    <div class="contact-card">
+      <div class="contact-top">
+        <div class="contact-avatar">${initials(p.pm)}</div>
+        <div><div class="contact-name">${p.pm}</div><div class="contact-co">${p.co}</div></div>
+      </div>
+      <div class="contact-detail"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.07 9.81 19.79 19.79 0 011.22 2.18 2 2 0 013.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.91 7.91a16 16 0 006.13 6.13l1.27-.68a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>${p.ph}</div>
+      <div class="contact-detail"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:${p.email}" style="color:var(--blue)">${p.email}</a></div>
+      <div class="contact-bins"><strong>${p.bins.length} bin${p.bins.length>1?'s':''}</strong>: ${p.bins.slice(0,3).map(b=>b.id+' '+b.name).join(', ')}${p.bins.length>3?' +'+( p.bins.length-3)+' more':''}</div>
+    </div>`).join('');
+}
+
+function renderAlerts(){
+  const alerts=[];
+  bins.forEach(b=>{
+    const c=calc(b);
+    if(c.verdict==='remove') alerts.push({type:'danger',title:b.id+' '+b.name+' — Remove',desc:'Monthly revenue '+fm(c.mRev)+' with net loss of '+fm(Math.abs(c.net))+'/month. Location cost not justified.',meta:b.addr+' · PM: '+b.pm});
+    if(b.full>=85&&c.verdict!=='remove') alerts.push({type:'warn',title:b.id+' '+b.name+' — Pickup needed',desc:'Bin is '+b.full+'% full ('+c.lbs+' lbs). Schedule collection to avoid overflow.',meta:b.addr});
+    if(!b.paid) alerts.push({type:'info',title:b.id+' '+b.name+' — Payment pending',desc:'$100 location fee unpaid for June 2026. Contact '+b.pm+' at '+b.ph+'.',meta:b.addr});
+    if(c.net>400) alerts.push({type:'success',title:b.id+' '+b.name+' — Expand here',desc:'Generating '+fm(c.mRev)+'/month. Tier '+b.tier+' area. Consider adding a second bin nearby.',meta:b.addr});
+  });
+  const colors={danger:'rgba(240,68,68,0.15)',warn:'rgba(245,158,11,0.15)',info:'rgba(96,165,250,0.15)',success:'rgba(34,201,138,0.15)'};
+  const icos={danger:'🚨',warn:'⚡',info:'💳',success:'⭐'};
+  document.getElementById('alert-list').innerHTML=alerts.slice(0,25).map(a=>`
+    <div class="alert-card">
+      <div class="alert-ico" style="background:${colors[a.type]}">${icos[a.type]}</div>
+      <div class="alert-body">
+        <div class="alert-ttl">${a.title}</div>
+        <div class="alert-desc">${a.desc}</div>
+        <div class="alert-meta">${a.meta}</div>
+      </div>
+    </div>`).join('');
+}
+
+const demoBins={
+  'B-001':{medAge:38,sexSplit:'54% F / 46% M',couples:'62%',kids:'41%'},
+  'B-002':{medAge:35,sexSplit:'51% F / 49% M',couples:'58%',kids:'35%'},
+  'B-003':{medAge:41,sexSplit:'53% F / 47% M',couples:'65%',kids:'44%'},
+  'B-004':{medAge:36,sexSplit:'50% F / 50% M',couples:'55%',kids:'38%'},
+  'B-005':{medAge:40,sexSplit:'52% F / 48% M',couples:'61%',kids:'42%'},
+  'B-006':{medAge:44,sexSplit:'55% F / 45% M',couples:'68%',kids:'39%'},
+  'B-007':{medAge:33,sexSplit:'49% F / 51% M',couples:'52%',kids:'28%'},
+  'B-008':{medAge:46,sexSplit:'56% F / 44% M',couples:'70%',kids:'36%'},
+  'B-009':{medAge:37,sexSplit:'51% F / 49% M',couples:'57%',kids:'40%'},
+  'B-010':{medAge:39,sexSplit:'53% F / 47% M',couples:'59%',kids:'43%'},
+  'B-011':{medAge:34,sexSplit:'50% F / 50% M',couples:'54%',kids:'37%'},
+  'B-012':{medAge:31,sexSplit:'52% F / 48% M',couples:'48%',kids:'25%'},
+  'B-013':{medAge:38,sexSplit:'54% F / 46% M',couples:'60%',kids:'38%'},
+  'B-014':{medAge:29,sexSplit:'51% F / 49% M',couples:'44%',kids:'18%'},
+  'B-015':{medAge:36,sexSplit:'50% F / 50% M',couples:'56%',kids:'39%'},
+  'B-016':{medAge:40,sexSplit:'53% F / 47% M',couples:'62%',kids:'45%'},
+  'B-017':{medAge:35,sexSplit:'51% F / 49% M',couples:'55%',kids:'41%'},
+  'B-018':{medAge:32,sexSplit:'48% F / 52% M',couples:'46%',kids:'48%'},
+  'B-019':{medAge:30,sexSplit:'47% F / 53% M',couples:'42%',kids:'52%'},
+  'B-020':{medAge:31,sexSplit:'49% F / 51% M',couples:'44%',kids:'50%'},
+};
+function getDemo(id){return demoBins[id]||{medAge:37,sexSplit:'51% F / 49% M',couples:'57%',kids:'38%'};}
+
+function demoBlock(id,showIncome,income){
+  const d=getDemo(id);
+  return`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px">
+    ${showIncome?`<div style="background:var(--surface3);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Avg household income</div><div style="font-size:13px;font-weight:500;color:var(--green)">${income||'N/A'}</div></div>`:''}
+    <div style="background:var(--surface3);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Median age</div><div style="font-size:13px;font-weight:500">${d.medAge} yrs</div></div>
+    <div style="background:var(--surface3);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Sex split</div><div style="font-size:12px;font-weight:500">${d.sexSplit}</div></div>
+    <div style="background:var(--surface3);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Couples</div><div style="font-size:13px;font-weight:500">${d.couples}</div></div>
+    <div style="background:var(--surface3);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Households w/ kids</div><div style="font-size:13px;font-weight:500">${d.kids}</div></div>
+  </div>`;
+}
+
+function renderUserBins(){
+  const s=(document.getElementById('user-search').value||'').toLowerCase();
+  const ft=document.getElementById('user-ftier').value;
+  let data=bins.filter(b=>{
+    if(ft&&b.tier!==ft) return false;
+    if(s&&!b.name.toLowerCase().includes(s)&&!b.addr.toLowerCase().includes(s)) return false;
+    return true;
+  });
+  document.getElementById('user-bins-list').innerHTML=data.map(b=>{
+    return`<div class="user-bin-card">
+      <div class="user-bin-top">
+        <div><div class="user-bin-id">${b.id}</div><div class="user-bin-name">${b.name}</div></div>
+        <span class="pill ${tc(b.tier)}">Tier ${b.tier}</span>
+      </div>
+      <div class="user-bin-addr"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${b.addr}</div>
+      <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Neighborhood demographics</div>
+      ${demoBlock(b.id,false,null)}
+      <div class="user-pm">
+        <div class="user-pm-title">Property management</div>
+        <div class="user-pm-name">${b.pm}</div>
+        <div class="user-pm-det"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>${b.co}</div>
+        <div class="user-pm-det"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.07 9.81 19.79 19.79 0 011.22 2.18 2 2 0 013.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.91 7.91a16 16 0 006.13 6.13l1.27-.68a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>${b.ph}</div>
+        <div class="user-pm-det"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${b.email}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdminBinDemographics(b){
+  return`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+    <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Neighborhood demographics</div>
+    ${demoBlock(b.id,true,b.income)}
+  </div>`;
+}
+
+function detectLocation(mode){
+  const statusEl=document.getElementById(mode==='user'?'loc-status-user':'loc-status');
+  const btnEl=document.getElementById(mode==='user'?'detect-btn-user':'detect-btn');
+  statusEl.textContent='Detecting your location...';
+  btnEl.disabled=true;
+  if(!navigator.geolocation){
+    statusEl.textContent='Geolocation not supported. Showing suggestions for Boca Raton, FL.';
+    showSuggestions(26.3683,'Boca Raton, FL',mode);
+    btnEl.disabled=false;
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      statusEl.textContent='Location detected! Analyzing nearby areas...';
+      setTimeout(()=>{showSuggestions(pos.coords.latitude,'Your area',mode);btnEl.disabled=false;},800);
+    },
+    ()=>{
+      statusEl.textContent='Location access denied. Showing suggestions for Boca Raton, FL.';
+      showSuggestions(26.3683,'Boca Raton, FL',mode);
+      btnEl.disabled=false;
+    }
+  );
+}
+
+function showSuggestions(lat,areaName,mode){
+  const suggestions=[
+    {name:'The Palms at Boca',addr:'9800 Glades Rd, Boca Raton, FL',type:'Residential Complex',tier:'A',income:'$96,500',tags:['320 units','Tier A','High turnover'],estRev:'$380–$430/mo',estLbs:'845–960 lbs/mo',quality:'High — affluent donors, frequent turnover',score:'96',scoreClass:'high',reason:'Large gated complex, Tier A income, no bin within 1.4 miles.',demo:{medAge:41,sexSplit:'55% F / 45% M',couples:'68%',kids:'42%'}},
+    {name:'Publix Plaza Center',addr:'4050 N Federal Hwy, Boca Raton, FL',type:'Shopping Plaza',tier:'A',income:'$89,000',tags:['Anchor store','Daily traffic','Parking lot'],estRev:'$340–$390/mo',estLbs:'755–870 lbs/mo',quality:'Medium-High — impulse donations, varied quality',score:'91',scoreClass:'high',reason:'Grocery-anchored plaza, high weekly foot traffic, ideal drop-off convenience.',demo:{medAge:38,sexSplit:'53% F / 47% M',couples:'61%',kids:'38%'}},
+    {name:'Shell Gas Station',addr:'7200 Beracasa Way, Boca Raton, FL',type:'Gas Station',tier:'B',income:'$74,000',tags:['Daily visits','Corner lot','Visible'],estRev:'$260–$310/mo',estLbs:'578–690 lbs/mo',quality:'Medium — convenience donations, mixed condition',score:'78',scoreClass:'med',reason:'High-frequency stop, corner visibility, mid-range neighborhood income.',demo:{medAge:35,sexSplit:'48% F / 52% M',couples:'54%',kids:'35%'}},
+    {name:'Camino Real Apartments',addr:'1200 Camino Real, Boca Raton, FL',type:'Apartment Complex',tier:'A',income:'$91,200',tags:['200 units','Tier A','Active residents'],estRev:'$320–$370/mo',estLbs:'712–825 lbs/mo',quality:'High — residential turnover, quality garments',score:'88',scoreClass:'high',reason:'Dense residential with high-income tenants, strong donation volume expected.',demo:{medAge:33,sexSplit:'52% F / 48% M',couples:'49%',kids:'27%'}},
+  ];
+  const isAdmin=currentRole==='admin';
+  const wrapId=mode==='user'?'suggestions-wrap-user':'suggestions-wrap';
+  const gridId=mode==='user'?'suggestion-grid-user':'suggestion-grid';
+  document.getElementById(wrapId).style.display='block';
+  if(mode!=='user') document.getElementById('loc-detected-area').textContent='Area: '+areaName;
+  document.getElementById(gridId).innerHTML=suggestions.map(s=>`
+    <div class="suggestion-card tier-${s.tier.toLowerCase()}">
+      <div class="sug-score ${s.scoreClass}">${s.score}</div>
+      <div class="sug-type">${s.type}</div>
+      <div class="sug-name">${s.name}</div>
+      <div class="sug-addr">${s.addr}</div>
+      <div class="sug-tags">${s.tags.map(t=>`<span class="sug-tag">${t}</span>`).join('')}</div>
+      <div style="margin:10px 0;display:grid;grid-template-columns:repeat(2,1fr);gap:6px">
+        ${isAdmin?`<div style="background:rgba(34,201,138,0.08);border-radius:6px;padding:7px 10px;border:1px solid rgba(34,201,138,0.15)"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Avg household income</div><div style="font-size:13px;font-weight:500;color:var(--green)">${s.income}</div></div>`:''}
+        <div style="background:var(--surface2);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Median age</div><div style="font-size:13px;font-weight:500">${s.demo.medAge} yrs</div></div>
+        <div style="background:var(--surface2);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Sex split</div><div style="font-size:12px;font-weight:500">${s.demo.sexSplit}</div></div>
+        <div style="background:var(--surface2);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Couples</div><div style="font-size:13px;font-weight:500">${s.demo.couples}</div></div>
+        <div style="background:var(--surface2);border-radius:6px;padding:7px 10px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:2px">Households w/ kids</div><div style="font-size:13px;font-weight:500">${s.demo.kids}</div></div>
+      </div>
+      ${isAdmin?`
+      <div style="background:rgba(34,201,138,0.06);border:1px solid rgba(34,201,138,0.15);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Bin potential</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+          <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Est. monthly revenue</div><div style="font-size:13px;font-weight:500;color:var(--green)">${s.estRev}</div></div>
+          <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Est. monthly lbs</div><div style="font-size:13px;font-weight:500">${s.estLbs}</div></div>
+        </div>
+        <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Donation quality</div><div style="font-size:12px;color:var(--text2)">${s.quality}</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.5">${s.reason}</div>
+      <button class="sug-btn" onclick="addSuggestedBin('${s.name}','${s.addr}','${s.tier}','${s.income}')">Add as bin location →</button>
+      `:`<div style="font-size:11px;color:var(--text3);margin-bottom:4px;line-height:1.5">${s.reason}</div>`}
+    </div>`).join('');
+}
+
+function addSuggestedBin(name,addr,tier,income){
+  document.getElementById('f-id').value='B-0'+Math.floor(55+Math.random()*100);
+  document.getElementById('f-name').value=name;
+  document.getElementById('f-addr').value=addr;
+  document.getElementById('f-placed').value=new Date().toISOString().split('T')[0];
+  document.getElementById('f-full').value=0;
+  document.getElementById('f-tier').value=tier;
+  document.getElementById('f-income').value=income;
+  document.getElementById('f-collections').value=5;
+  document.getElementById('modal-bin-title').textContent='Add suggested bin';
+  openModal('bin');
+}
+
+function updateFPreview(){
+  const pct=parseFloat(document.getElementById('f-full').value)||0;
+  const lbs=+(pct/100*MAX).toFixed(2);
+  const rev=(lbs*RATE).toFixed(2);
+  document.getElementById('f-preview').innerHTML=`<strong>${lbs} lbs</strong> at ${pct}% fullness · Revenue if collected now: <strong style="color:var(--green)">$${rev}</strong>`;
+}
+function openModal(id){document.getElementById('modal-'+id).classList.add('open');}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');editingId=null;document.getElementById('modal-bin-title').textContent='Add new bin';}
+function openAddBin(){editingId=null;['f-id','f-name','f-addr','f-placed','f-full','f-income','f-collections','f-pm','f-co','f-ph','f-email','f-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('f-preview').textContent='Enter fullness % to see estimate';document.getElementById('modal-bin-title').textContent='Add new bin';openModal('bin');}
+function openEditBin(id){
+  const b=bins.find(x=>x.id===id);if(!b)return;
+  editingId=id;
+  document.getElementById('f-id').value=b.id;
+  document.getElementById('f-name').value=b.name;
+  document.getElementById('f-addr').value=b.addr;
+  document.getElementById('f-placed').value=b.placed;
+  document.getElementById('f-full').value=b.full;
+  document.getElementById('f-tier').value=b.tier;
+  document.getElementById('f-income').value=b.income;
+  document.getElementById('f-collections').value=b.col;
+  document.getElementById('f-pm').value=b.pm||'';
+  document.getElementById('f-co').value=b.co||'';
+  document.getElementById('f-ph').value=b.ph||'';
+  document.getElementById('f-email').value=b.email||'';
+  document.getElementById('f-notes').value=b.notes||'';
+  updateFPreview();
+  document.getElementById('modal-bin-title').textContent='Edit '+b.id+' — '+b.name;
+  openModal('bin');
+}
+function saveBin(){
+  const b={
+    id:document.getElementById('f-id').value.trim(),
+    name:document.getElementById('f-name').value.trim(),
+    addr:document.getElementById('f-addr').value.trim(),
+    placed:document.getElementById('f-placed').value,
+    full:parseInt(document.getElementById('f-full').value)||0,
+    tier:document.getElementById('f-tier').value,
+    income:document.getElementById('f-income').value.trim(),
+    col:parseInt(document.getElementById('f-collections').value)||5,
+    pm:document.getElementById('f-pm').value.trim()||'Not on file',
+    co:document.getElementById('f-co').value.trim()||'Not on file',
+    ph:document.getElementById('f-ph').value.trim()||'Not on file',
+    email:document.getElementById('f-email').value.trim()||'Not on file',
+    notes:document.getElementById('f-notes').value.trim(),
+    paid:false,log:[]
+  };
+  if(editingId){const i=bins.findIndex(x=>x.id===editingId);b.paid=bins[i].paid;b.log=bins[i].log||[];bins[i]=b;}
+  else bins.push(b);
+  save();closeModal('bin');renderBinsTable();
+}
+document.addEventListener('click',e=>{
+  const o=document.getElementById('modal-bin');
+  if(e.target===o)closeModal('bin');
+});
+</script>
+</body>
+</html>
